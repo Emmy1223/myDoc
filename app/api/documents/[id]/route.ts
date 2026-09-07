@@ -12,20 +12,22 @@ export const runtime = "nodejs";
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = getSessionUserId();
+  const awaitedParams = await params;
+  const userId = await getSessionUserId();
   if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-  const document = getDocument(userId, params.id);
+  const document = getDocument(userId, awaitedParams.id);
   if (!document) return NextResponse.json({ error: "Document not found." }, { status: 404 });
   return NextResponse.json({ document });
 }
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = getSessionUserId();
+  const awaitedParams = await params;
+  const userId = await getSessionUserId();
   if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   const body = (await request.json().catch(() => ({}))) as {
     title?: string;
@@ -33,26 +35,27 @@ export async function PUT(
     status?: "draft" | "in-progress" | "completed";
     content?: Record<string, unknown>;
   };
-  const document = updateDocument(userId, params.id, body);
+  const document = updateDocument(userId, awaitedParams.id, body);
   if (!document) return NextResponse.json({ error: "Document not found." }, { status: 404 });
   return NextResponse.json({ document });
 }
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = getSessionUserId();
+  const awaitedParams = await params;
+  const userId = await getSessionUserId();
   if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   const body = (await request.json().catch(() => ({}))) as { action?: string };
 
   if (body.action === "duplicate") {
-    const document = duplicateDocument(userId, params.id);
+    const document = duplicateDocument(userId, awaitedParams.id);
     if (!document) return NextResponse.json({ error: "Document not found." }, { status: 404 });
     return NextResponse.json({ document }, { status: 201 });
   }
   if (body.action === "export") {
-    const document = exportDocument(userId, params.id);
+    const document = exportDocument(userId, awaitedParams.id);
     if (!document) return NextResponse.json({ error: "Document not found." }, { status: 404 });
     return NextResponse.json({ document });
   }
@@ -61,11 +64,12 @@ export async function POST(
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = getSessionUserId();
+  const awaitedParams = await params;
+  const userId = await getSessionUserId();
   if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-  const document = deleteDocument(userId, params.id);
+  const document = deleteDocument(userId, awaitedParams.id);
   if (!document) return NextResponse.json({ error: "Document not found." }, { status: 404 });
   return NextResponse.json({ document });
 }

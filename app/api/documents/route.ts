@@ -10,7 +10,7 @@ import { getSessionUserId } from "@/lib/session";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const userId = getSessionUserId();
+  const userId = await getSessionUserId();
   if (!userId) {
     return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   }
