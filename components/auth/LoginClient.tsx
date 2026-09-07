@@ -36,7 +36,7 @@ export default function LoginClient({ nextPath }: { nextPath: string }) {
 
   return (
     <>
-      <div className="flex border-b border-[#E5E5E5]">
+      <div className="flex border-b border-stone-200">
         {(["signin", "signup"] as const).map((option) => (
           <button
             key={option}
@@ -45,10 +45,10 @@ export default function LoginClient({ nextPath }: { nextPath: string }) {
               setMode(option);
               setError("");
             }}
-            className={`min-h-11 flex-1 border-b-2 px-2 text-sm font-semibold capitalize ${
+            className={`min-h-11 flex-1 border-b-2 px-2 text-sm font-semibold capitalize transition-colors ${
               mode === option
-                ? "border-[#4F46E5] text-[#4F46E5]"
-                : "border-transparent text-[#737373] hover:bg-[#F5F5F5] hover:text-[#171717]"
+                ? "border-rust text-rust"
+                : "border-transparent text-stone-500 hover:bg-stone-100 hover:text-ink"
             }`}
           >
             {option === "signin" ? "Sign in" : "Create account"}
@@ -59,29 +59,31 @@ export default function LoginClient({ nextPath }: { nextPath: string }) {
       <form onSubmit={submit} className="mt-6 space-y-4">
         {mode === "signup" && (
           <label className="block">
-            <span className="mb-1.5 block text-sm font-semibold">Your name</span>
+            <span className="mb-1.5 block text-sm font-semibold text-ink">Your name</span>
             <input
               required
               value={name}
               onChange={(event) => setName(event.target.value)}
               autoComplete="name"
-              className="min-h-11 w-full border border-[#D4D4D4] bg-white px-3 text-sm outline-none focus:border-[#4F46E5]"
+              className="min-h-11 w-full border border-stone-300 bg-white px-3 text-sm text-ink outline-none focus:border-rust placeholder:text-stone-400"
+              placeholder="e.g., Alex Reyes"
             />
           </label>
         )}
         <label className="block">
-          <span className="mb-1.5 block text-sm font-semibold">Email</span>
+          <span className="mb-1.5 block text-sm font-semibold text-ink">Email</span>
           <input
             required
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             autoComplete="email"
-            className="min-h-11 w-full border border-[#D4D4D4] bg-white px-3 text-sm outline-none focus:border-[#4F46E5]"
+            className="min-h-11 w-full border border-stone-300 bg-white px-3 text-sm text-ink outline-none focus:border-rust placeholder:text-stone-400"
+            placeholder="you@example.com"
           />
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-sm font-semibold">Password</span>
+          <span className="mb-1.5 block text-sm font-semibold text-ink">Password</span>
           <input
             required
             minLength={8}
@@ -89,9 +91,10 @@ export default function LoginClient({ nextPath }: { nextPath: string }) {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             autoComplete={mode === "signin" ? "current-password" : "new-password"}
-            className="min-h-11 w-full border border-[#D4D4D4] bg-white px-3 text-sm outline-none focus:border-[#4F46E5]"
+            className="min-h-11 w-full border border-stone-300 bg-white px-3 text-sm text-ink outline-none focus:border-rust placeholder:text-stone-400"
+            placeholder={mode === "signin" ? "Enter your password" : "Create a password (min. 8 characters)"}
           />
-          <span className="mt-1.5 block text-xs leading-5 text-[#737373]">
+          <span className="mt-1.5 block text-xs leading-5 text-stone-500">
             Use at least 8 characters.
           </span>
         </label>
@@ -104,10 +107,19 @@ export default function LoginClient({ nextPath }: { nextPath: string }) {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex min-h-11 w-full items-center justify-center gap-2 bg-[#4F46E5] px-4 text-sm font-semibold text-white hover:bg-[#4338CA] disabled:cursor-wait disabled:opacity-70"
+          className="inline-flex min-h-11 w-full items-center justify-center gap-2 bg-rust px-4 text-sm font-semibold text-white hover:bg-rust-dark disabled:cursor-wait disabled:opacity-70 transition-colors"
         >
-          {loading ? <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={2} /> : <ArrowRight className="h-4 w-4" strokeWidth={2} />}
-          {loading ? "Working…" : mode === "signin" ? "Sign in" : "Create account"}
+          {loading ? (
+            <>
+              <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={2} />
+              Working…
+            </>
+          ) : (
+            <>
+              <ArrowRight className="h-4 w-4" strokeWidth={2} />
+              {mode === "signin" ? "Sign in" : "Create account"}
+            </>
+          )}
         </button>
       </form>
     </>
