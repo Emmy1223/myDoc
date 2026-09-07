@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       if (!document) {
         return NextResponse.json(
           { error: "Create a document before cloning your last one." },
-          { status: 404 },
+          { status: 404 }
         );
       }
       return NextResponse.json({ document }, { status: 201 });
