@@ -1,90 +1,78 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import {
-  FileText,
-  Settings,
-  Plus,
-  Pencil,
-  Clock,
-  MoreHorizontal,
-  type LucideIcon,
-} from "lucide-react";
+import { redirect } from "next/navigation";
+import { FileText, Settings, Plus, Pencil, Clock, MoreHorizontal, LogOut } from "lucide-react";
+import { getSessionUserId } from "@/lib/session";
+import { getDashboardData } from "@/lib/server-db";
 
 export const metadata: Metadata = {
   title: "Dashboard — myDoc",
 };
 
-type DocStatus = "Ready" | "Draft" | "Needs review";
+type DocStatus = "draft" | "in-progress" | "completed";
 
-const statusStyles: Record<DocStatus, string> = {
-  Ready: "bg-orange-50 text-rust border-orange-200",
-  Draft: "bg-stone-100 text-stone-600 border-stone-200",
-  "Needs review": "bg-white text-stone-700 border-stone-300",
+const statusLabels: Record<DocStatus, string> = {
+  draft: "Draft",
+  "in-progress": "In progress",
+  completed: "Ready",
 };
 
-const documents: {
-  title: string;
-  edited: string;
-  template: string;
-  status: DocStatus;
-}[] = [
-  {
-    title: "Product Designer — London",
-    edited: "Edited 2 hours ago",
-    template: "Folio",
-    status: "Ready",
-  },
-  {
-    title: "Frontend Engineer CV",
-    edited: "Edited yesterday",
-    template: "Ledger",
-    status: "Draft",
-  },
-  {
-    title: "Operations Manager 2026",
-    edited: "Edited 3 days ago",
-    template: "Slab",
-    status: "Needs review",
-  },
-  {
-    title: "Research Assistant — Academic",
-    edited: "Edited last week",
-    template: "Folio",
-    status: "Ready",
-  },
-  {
-    title: "Cover Letter — Studio Application",
-    edited: "Edited 12 Aug 2026",
-    template: "Slab",
-    status: "Draft",
-  },
-];
+const statusStyles: Record<DocStatus, string> = {
+  draft: "bg-stone-100 text-stone-600 border-stone-200",
+  "in-progress": "bg-orange-50 text-rust border-orange-200",
+  completed: "bg-green-50 text-green-800 border-green-200",
+};
 
 function SidebarLink({
+  href,
   icon: Icon,
   label,
   active,
 }: {
-  icon: LucideIcon;
+  href: string;
+  icon: React.ElementType;
   label: string;
   active?: boolean;
 }) {
   return (
-    <span
+    <Link
+      href={href}
       aria-current={active ? "page" : undefined}
-      className={`flex items-center gap-3 border px-4 py-2.5 text-sm font-medium ${
+      className={`flex items-center gap-3 border px-4 py-2.5 text-sm font-medium transition-colors ${
         active
           ? "border-rust bg-rust text-white"
-          : "border-transparent text-stone-300"
+          : "border-transparent text-stone-300 hover:border-stone-700 hover:bg-stone-800 hover:text-white"
       }`}
     >
       <Icon className="h-4 w-4" strokeWidth={1.75} />
       {label}
-    </span>
+    </Link>
   );
 }
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const userId = await getSessionUserId();
+  
+  if (!userId) {
+    redirect("/login?next=/dashboard");
+  }
+
+  const data = getDashboardData(userId);
+  
+  if (!data) {
+    redirect("/login?next=/dashboard");
+  }
+
+  const { user, documents, stats } = data;
+  const initials = user.name
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  const recentDocs = documents.slice(0, 5);
+
   return (
     <div className="flex min-h-screen bg-paper">
       {/* Left sidebar */}
@@ -99,21 +87,34 @@ export default function DashboardPage() {
         </div>
 
         <nav className="flex flex-col gap-1 p-3">
-          <SidebarLink icon={FileText} label="My Documents" active />
-          <SidebarLink icon={Settings} label="Settings" />
+          <SidebarLink href="/dashboard" icon={FileText} label="My Documents" active />
+          <SidebarLink href="/settings" icon={Settings} label="Settings" />
         </nav>
 
         <div className="mt-auto border-t border-stone-800 p-4">
-          <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center border border-stone-700 bg-stone-800 text-xs font-bold text-orange-400">
-              AR
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-white">
-                Alex Reyes
-              </p>
-              <p className="truncate text-xs text-stone-400">Free plan</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="flex h-8 w-8 items-center justify-center border border-stone-700 bg-stone-800 text-xs font-bold text-orange-400">
+                {initials}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-white">
+                  {user.name}
+                </p>
+                <p className="truncate text-xs text-stone-400">
+                  {documents.length} document{documents.length !== 1 ? "s" : ""}
+                </p>
+              </div>
             </div>
+            <form action="/api/auth/logout" method="POST">
+              <button
+                type="submit"
+                className="text-stone-500 hover:text-stone-300 transition-colors"
+                aria-label="Sign out"
+              >
+                <LogOut className="h-4 w-4" strokeWidth={1.75} />
+              </button>
+            </form>
           </div>
         </div>
       </aside>
@@ -129,8 +130,8 @@ export default function DashboardPage() {
             my<span className="text-rust">Doc</span>
           </Link>
           <Link
-            href="/builder"
-            className="bg-rust px-3 py-1.5 text-xs font-semibold text-white"
+            href="/builder?new=1"
+            className="bg-rust px-3 py-1.5 text-xs font-semibold text-white hover:bg-rust-dark transition-colors"
           >
             New
           </Link>
@@ -147,64 +148,114 @@ export default function DashboardPage() {
                   Recent Documents
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-stone-600">
-                  Five documents in your library. Pick one up where you left
-                  off.
+                  {documents.length === 0
+                    ? "No documents yet. Create your first one to get started."
+                    : `${documents.length} document${documents.length !== 1 ? "s" : ""} in your library. Pick one up where you left off.`}
                 </p>
               </div>
               <Link
-                href="/builder"
-                className="inline-flex items-center gap-2 bg-rust px-5 py-2.5 text-sm font-semibold text-white hover:bg-rust-dark print-hidden"
+                href="/builder?new=1"
+                className="inline-flex items-center gap-2 bg-rust px-5 py-2.5 text-sm font-semibold text-white hover:bg-rust-dark transition-colors print-hidden"
               >
                 <Plus className="h-4 w-4" strokeWidth={2.25} />
                 Create New Document
               </Link>
             </div>
 
-            {/* Documents — 1-column list, not a card grid */}
-            <ul className="mt-2">
-              {documents.map((doc, i) => (
-                <li
-                  key={i}
-                  className="group flex flex-wrap items-center gap-4 border-b border-stone-200 py-5"
+            {/* Documents — 1-column list */}
+            {recentDocs.length === 0 ? (
+              <div className="mt-8 border border-dashed border-stone-300 bg-white px-6 py-12 text-center">
+                <FileText className="mx-auto h-8 w-8 text-stone-400" strokeWidth={1.5} />
+                <h3 className="mt-4 font-display text-xl font-bold text-ink">No documents yet</h3>
+                <p className="mt-2 text-sm text-stone-600">
+                  Upload an existing CV or start a new document from scratch.
+                </p>
+                <Link
+                  href="/builder?upload=1"
+                  className="mt-6 inline-block bg-rust px-6 py-2.5 text-sm font-semibold text-white hover:bg-rust-dark transition-colors"
                 >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-stone-300 bg-white">
-                    <FileText className="h-4 w-4 text-stone-500" strokeWidth={1.75} />
-                  </span>
+                  Upload a CV
+                </Link>
+              </div>
+            ) : (
+              <ul className="mt-2">
+                {recentDocs.map((doc) => {
+                  const status = doc.status as DocStatus;
+                  return (
+                    <li
+                      key={doc.id}
+                      className="group flex flex-wrap items-center gap-4 border-b border-stone-200 py-5"
+                    >
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-stone-300 bg-white">
+                        <FileText className="h-4 w-4 text-stone-500" strokeWidth={1.75} />
+                      </span>
 
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-display text-base font-bold tracking-tightish text-ink">
-                      {doc.title}
-                    </p>
-                    <p className="mt-0.5 flex items-center gap-1.5 text-xs text-stone-500">
-                      <Clock className="h-3 w-3" strokeWidth={2} />
-                      {doc.edited}
-                      <span className="text-stone-300">/</span>
-                      <span>{doc.template} template</span>
-                    </p>
-                  </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-display text-base font-bold tracking-tightish text-ink">
+                          {doc.title}
+                        </p>
+                        <p className="mt-0.5 flex items-center gap-1.5 text-xs text-stone-500">
+                          <Clock className="h-3 w-3" strokeWidth={2} />
+                          Updated {new Date(doc.updatedAt).toLocaleDateString()}
+                          <span className="text-stone-300">/</span>
+                          <span>{doc.templateName} template</span>
+                        </p>
+                      </div>
 
-                  <span
-                    className={`border px-2.5 py-1 text-xs font-semibold ${statusStyles[doc.status]}`}
-                  >
-                    {doc.status}
-                  </span>
+                      <span
+                        className={`border px-2.5 py-1 text-xs font-semibold ${statusStyles[status]}`}
+                      >
+                        {statusLabels[status]}
+                      </span>
 
-                  <Link
-                    href="/builder"
-                    className="inline-flex items-center gap-1.5 border border-stone-300 bg-white px-3.5 py-2 text-xs font-semibold text-ink hover:border-rust hover:text-rust print-hidden"
-                  >
-                    <Pencil className="h-3.5 w-3.5" strokeWidth={2} />
-                    Edit
-                  </Link>
-                  <span
-                    className="border border-transparent p-2 text-stone-400 print:hidden"
-                    aria-hidden
-                  >
-                    <MoreHorizontal className="h-4 w-4" strokeWidth={2} />
-                  </span>
-                </li>
-              ))}
-            </ul>
+                      <Link
+                        href={`/builder?document=${encodeURIComponent(doc.id)}`}
+                        className="inline-flex items-center gap-1.5 border border-stone-300 bg-white px-3.5 py-2 text-xs font-semibold text-ink hover:border-rust hover:text-rust transition-colors print-hidden"
+                      >
+                        <Pencil className="h-3.5 w-3.5" strokeWidth={2} />
+                        Edit
+                      </Link>
+                      <span
+                        className="border border-transparent p-2 text-stone-400 print-hidden"
+                        aria-hidden
+                      >
+                        <MoreHorizontal className="h-4 w-4" strokeWidth={2} />
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+
+            {/* Quick stats */}
+            {documents.length > 0 && (
+              <div className="mt-10 grid grid-cols-2 gap-4 border-t border-stone-200 pt-8 sm:grid-cols-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-stone-500">
+                    Total
+                  </p>
+                  <p className="mt-1 font-display text-2xl font-bold text-ink">
+                    {stats.totalDocuments}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-stone-500">
+                    Exports this month
+                  </p>
+                  <p className="mt-1 font-display text-2xl font-bold text-ink">
+                    {stats.exportsThisMonth}
+                  </p>
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-stone-500">
+                    Most used template
+                  </p>
+                  <p className="mt-1 font-display text-2xl font-bold text-ink">
+                    {stats.mostUsedTemplate || "—"}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </main>
       </div>

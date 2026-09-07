@@ -33,8 +33,9 @@ export function readSessionValue(value?: string) {
   return userId;
 }
 
-export function getSessionUserId() {
-  return readSessionValue(cookies().get(sessionCookieName)?.value);
+export async function getSessionUserId() {
+  const cookieStore = await cookies();
+  return readSessionValue(cookieStore.get(sessionCookieName)?.value);
 }
 
 export function setSessionCookie(response: NextResponse, userId: string) {

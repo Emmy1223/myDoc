@@ -1,0 +1,45 @@
+{
+  "users": [
+    {
+      "id": "user_a4167a67-c815-417a-bc13-dbbdd4f6c9f1",
+      "name": "Emmy",
+      "email": "emmanuelfaleti@outlook.com",
+      "passwordHash": "1c88c1bc-a095-4c5b-b735-12e8149e0ca6:5918e243c445f2d46fdee7d9758a879efb30da9e3d36cadb4553a73ea0e71b93a2f782f3d21cf3354b5870bdec5e9e8d2c6d54056a4a55433d7ee2df04494c3f",
+      "createdAt": "2026-09-07T11:21:51.855Z"
+    }
+  ],
+  "templates": [
+    {
+      "id": "folio",
+      "name": "Folio",
+      "category": "CVs",
+      "description": "A clean single-column CV for focused applications."
+    },
+    {
+      "id": "ledger",
+      "name": "Ledger",
+      "category": "CVs",
+      "description": "A structured two-column CV for detailed experience."
+    },
+    {
+      "id": "slab",
+      "name": "Slab",
+      "category": "CVs",
+      "description": "A spacious CV with strong hierarchy and clear sections."
+    },
+    {
+      "id": "correspondence",
+      "name": "Correspondence",
+      "category": "Cover Letters",
+      "description": "A direct, well-spaced layout for cover letters."
+    },
+    {
+      "id": "brief",
+      "name": "Brief",
+      "category": "Proposals",
+      "description": "A compact proposal layout for client-ready documents."
+    }
+  ],
+  "documents": [],
+  "activities": []
+}
