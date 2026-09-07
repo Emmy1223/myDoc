@@ -10,7 +10,7 @@ import {
   CloudOff,
 } from "lucide-react";
 import type { CVData, TemplateId, Density } from "@/lib/cv-data";
-import { sampleCV, extractedCV } from "@/lib/cv-data";
+import { emptyCV, sampleCV } from "@/lib/cv-data";
 import Dropzone from "./Dropzone";
 import ContentTab from "./ContentTab";
 import TemplatesTab from "./TemplatesTab";
@@ -27,8 +27,14 @@ const PAGE_PX: Record<"A4" | "Letter", { w: number; h: number }> = {
 
 export default function BuilderClient({
   startUpload = false,
+  startNew = false,
+  startPrint = false,
+  documentId,
 }: {
   startUpload?: boolean;
+  startNew?: boolean;
+  startPrint?: boolean;
+  documentId?: string;
 }) {
   const [cv, setCv] = useState<CVData>(sampleCV);
   const [tab, setTab] = useState<Tab>("content");
@@ -67,10 +73,14 @@ export default function BuilderClient({
     return () => window.clearTimeout(t);
   }, [cv, docName, template, pageSize, density, autoSave]);
 
-  const handleExtracted = useCallback((_fileName: string) => {
-    // Map the simulated extraction result (strict schema) into the form.
-    setCv(extractedCV);
-    setDocName("Frontend Engineer CV");
+  // Handle real PDF extraction
+  const handleExtracted = useCallback((fileName: string, extractedData: CVData) => {
+    // Set the extracted CV data
+    setCv(extractedData);
+    // Use the file name as the document name (remove extension)
+    const nameWithoutExtension = fileName.replace(/\.[^/.]+$/, "").trim();
+    setDocName(nameWithoutExtension || "Imported CV");
+    // Switch to content tab so user can review the extracted data
     setTab("content");
   }, []);
 
