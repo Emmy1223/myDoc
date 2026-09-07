@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const userId = getSessionUserId();
+  const userId = await getSessionUserId();
   const user = userId ? getUser(userId) : null;
   if (!user) return NextResponse.json({ user: null });
   return NextResponse.json({

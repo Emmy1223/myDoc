@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  const userId = getSessionUserId();
+  const userId = await getSessionUserId();
   if (!userId) {
     return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   }
