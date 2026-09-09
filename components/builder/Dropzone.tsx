@@ -265,6 +265,9 @@ function parseCVText(text: string) {
 
   console.log("Total lines:", rawLines.length);
 
+  // ============================================================
+  // RESULT OBJECT - NOW INCLUDES ALL NEW SECTION FIELDS
+  // ============================================================
   const result = {
     fullName: "",
     title: "",
@@ -291,6 +294,100 @@ function parseCVText(text: string) {
       detail: string;
     }>,
     skills: [] as string[],
+    // ============================================================
+    // NEW SECTION FIELDS - ALL EMPTY ARRAYS
+    // ============================================================
+    languages: [] as Array<{
+      id: string;
+      name: string;
+      proficiency: string;
+    }>,
+    certificates: [] as Array<{
+      id: string;
+      name: string;
+      issuer: string;
+      date: string;
+      link?: string;
+    }>,
+    projects: [] as Array<{
+      id: string;
+      name: string;
+      description: string;
+      role: string;
+      link?: string;
+      technologies?: string;
+    }>,
+    publications: [] as Array<{
+      id: string;
+      title: string;
+      publisher: string;
+      date: string;
+      link?: string;
+      description?: string;
+    }>,
+    courses: [] as Array<{
+      id: string;
+      name: string;
+      provider: string;
+      date: string;
+      link?: string;
+    }>,
+    organizations: [] as Array<{
+      id: string;
+      name: string;
+      role: string;
+      start: string;
+      end: string;
+      description?: string;
+    }>,
+    interests: [] as Array<{
+      id: string;
+      name: string;
+    }>,
+    references: [] as Array<{
+      id: string;
+      name: string;
+      position: string;
+      company: string;
+      email: string;
+      phone: string;
+    }>,
+    awards: [] as Array<{
+      id: string;
+      name: string;
+      issuer: string;
+      date: string;
+      description?: string;
+    }>,
+    declaration: [] as Array<{
+      id: string;
+      text: string;
+      signature?: string;
+      date?: string;
+    }>,
+    custom: [] as Array<{
+      id: string;
+      title: string;
+      content: string;
+    }>,
+    // Section order - use default
+    sectionOrder: [
+      "summary",
+      "experience",
+      "education",
+      "skills",
+      "languages",
+      "certificates",
+      "projects",
+      "publications",
+      "courses",
+      "organizations",
+      "interests",
+      "references",
+      "awards",
+      "declaration",
+      "custom"
+    ],
   };
 
   const fullText = rawLines.join('\n');
@@ -961,47 +1058,21 @@ function parseCVText(text: string) {
   parseEducationEntries();
 
   // ============================================================
-  // FALLBACK VALUES
+  // FALLBACK VALUES - Now with all fields
   // ============================================================
-  if (!result.fullName) result.fullName = "Applicant Name";
-  if (!result.title) result.title = "Software Engineer";
-  if (!result.email) result.email = "email@example.com";
-  if (!result.phone) result.phone = "+1 234 567 8900";
-  if (!result.location) result.location = "City, State";
+  if (!result.fullName) result.fullName = "";
+  if (!result.title) result.title = "";
+  if (!result.email) result.email = "";
+  if (!result.phone) result.phone = "";
+  if (!result.location) result.location = "";
+  if (!result.website) result.website = "";
   
   if (!result.summary) {
-    result.summary = "Experienced software engineer with expertise in full-stack development, cloud infrastructure, and AI solutions. Proven track record of delivering high-quality solutions and leading teams to success.";
+    result.summary = "";
   }
 
-  // Ensure we have at least one experience entry
-  if (result.experience.length === 0) {
-    result.experience.push({
-      id: `exp-${Date.now()}-0`,
-      role: "Software Engineer",
-      company: "Organization",
-      location: result.location || "",
-      start: "",
-      end: "",
-      bullets: "Led design and development of scalable cloud-native applications.",
-    });
-  }
-
-  // Ensure we have at least one education entry
-  if (result.education.length === 0) {
-    result.education.push({
-      id: `edu-${Date.now()}-0`,
-      degree: "Bachelor's Degree",
-      school: "University",
-      start: "",
-      end: "",
-      detail: "",
-    });
-  }
-
-  // Ensure skills are not empty
-  if (result.skills.length === 0) {
-    result.skills = ["Python", "JavaScript", "AWS", "React", "Node.js"];
-  }
+  // Don't add fallback experience/education/skills - let user add them
+  // if they want them
 
   console.log("=== PARSING COMPLETE ===");
   console.log("Final result:", {
@@ -1013,6 +1084,17 @@ function parseCVText(text: string) {
     education: result.education.length,
     experience: result.experience.length,
     skills: result.skills.length,
+    languages: result.languages.length,
+    certificates: result.certificates.length,
+    projects: result.projects.length,
+    publications: result.publications.length,
+    courses: result.courses.length,
+    organizations: result.organizations.length,
+    interests: result.interests.length,
+    references: result.references.length,
+    awards: result.awards.length,
+    declaration: result.declaration.length,
+    custom: result.custom.length,
   });
   console.log("Experience entries:", result.experience.map(e => `${e.role} at ${e.company}`));
   console.log("Education entries:", result.education.map(e => `${e.degree} at ${e.school}`));

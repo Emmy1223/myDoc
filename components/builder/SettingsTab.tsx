@@ -111,14 +111,6 @@ export default function SettingsTab({
         </div>
       </div>
 
-      <div className="border border-stone-300 bg-stone-100 p-3">
-        <p className="flex items-start gap-2 text-xs leading-5 text-stone-600">
-          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-rust" strokeWidth={1.75} />
-          In this demo, extraction and previewing run entirely in your browser.
-          In production, uploaded files are parsed server-side and deleted
-          after processing.
-        </p>
-      </div>
     </div>
   );
 }

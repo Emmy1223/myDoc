@@ -238,9 +238,6 @@ export default function SettingsClient() {
             <h2 className="font-display text-base font-bold tracking-tightish text-ink">
               Privacy and local data
             </h2>
-            <p className="mt-1 text-sm leading-6 text-stone-600">
-              This demo keeps settings and document work in your browser. Nothing is uploaded from this page.
-            </p>
             <button
               type="button"
               onClick={clearLocalData}

@@ -24,7 +24,7 @@ Open http://localhost:3000.
 
 ## Builder features
 
-- **Upload dropzone** — drag in a PDF/DOCX; extraction is simulated in this demo and maps the document into the CV schema (Name, Experience, Education, Skills), auto-filling every field.
+
 - **Content accordion** — Personal Details, Work Experience, Education, and a tag-based Skills editor. The preview updates as you type.
 - **Templates** — three layouts (`Folio` editorial, `Ledger` two-column with dark side rail, `Slab` monospaced) with CSS-built thumbnails; content reflows when switching.
 - **Settings** — document name, page size (A4 / Letter), content density, and preview preferences.
