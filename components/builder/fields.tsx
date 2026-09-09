@@ -78,15 +78,24 @@ export function SkillsEditor({
   skills: string[];
   onChange: (skills: string[]) => void;
 }) {
+  const [inputValue, setInputValue] = useState("");
+
   function remove(skill: string) {
     onChange(skills.filter((s) => s !== skill));
   }
-  function add(e: React.KeyboardEvent<HTMLInputElement>) {
+
+  function addSkill() {
+    const trimmed = inputValue.trim();
+    if (trimmed && !skills.includes(trimmed)) {
+      onChange([...skills, trimmed]);
+      setInputValue("");
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
-      const v = (e.target as HTMLInputElement).value.trim();
-      if (v && !skills.includes(v)) onChange([...skills, v]);
-      (e.target as HTMLInputElement).value = "";
+      addSkill();
     }
   }
 
@@ -95,27 +104,49 @@ export function SkillsEditor({
       <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-stone-500">
         Skills
       </span>
-      <div className="flex flex-wrap gap-1.5 border border-stone-300 bg-white p-2">
-        {skills.map((s) => (
-          <span
-            key={s}
-            className="inline-flex items-center gap-1 border border-stone-300 bg-stone-100 px-2 py-1 text-xs font-medium text-stone-700"
+      <div className="space-y-2">
+        {/* Input area */}
+        <div className="flex gap-2">
+          <input
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type a skill and press Enter"
+            className="flex-1 border border-stone-300 bg-white px-3 py-2 text-sm text-ink placeholder:text-stone-400 focus:border-rust"
+          />
+          <button
+            onClick={addSkill}
+            className="px-4 py-2 border border-stone-300 bg-white text-sm font-medium text-stone-600 hover:border-stone-900 hover:text-ink"
           >
-            {s}
-            <button
-              onClick={() => remove(s)}
-              className="text-stone-400 hover:text-rust"
-              aria-label={`Remove ${s}`}
-            >
-              ×
-            </button>
-          </span>
-        ))}
-        <input
-          onKeyDown={add}
-          placeholder={skills.length ? "Add another + Enter" : "Type a skill, press Enter"}
-          className="min-w-[140px] flex-1 bg-transparent px-1 py-1 text-sm placeholder:text-stone-400"
-        />
+            Add
+          </button>
+        </div>
+        
+        {/* Skills display - compact grid */}
+        <div className="flex flex-wrap gap-1.5 border border-stone-300 bg-white p-2 max-h-48 overflow-y-auto">
+          {skills.length === 0 ? (
+            <span className="text-sm text-stone-400">No skills added yet</span>
+          ) : (
+            skills.map((s) => (
+              <span
+                key={s}
+                className="inline-flex items-center gap-1 border border-stone-300 bg-stone-100 px-2 py-1 text-xs font-medium text-stone-700"
+              >
+                {s}
+                <button
+                  onClick={() => remove(s)}
+                  className="text-stone-400 hover:text-rust"
+                  aria-label={`Remove ${s}`}
+                >
+                  ×
+                </button>
+              </span>
+            ))
+          )}
+        </div>
+        <p className="text-xs text-stone-400">
+          {skills.length} skill{skills.length !== 1 ? "s" : ""} added
+        </p>
       </div>
     </div>
   );

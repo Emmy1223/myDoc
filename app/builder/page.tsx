@@ -1,14 +1,23 @@
-import type { Metadata } from "next";
-import BuilderClient from "@/components/builder/BuilderClient";
+// app/builder/page.tsx
+"use client";
 
-export const metadata: Metadata = {
-  title: "Document Builder — myDoc",
-};
+import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 
-export default function BuilderPage({
-  searchParams,
-}: {
-  searchParams: { upload?: string };
-}) {
-  return <BuilderClient startUpload={searchParams.upload === "1"} />;
+const BuilderClient = dynamic(
+  () => import("@/components/builder/BuilderClient"),
+  { ssr: false }
+);
+
+export default function BuilderPage() {
+  const searchParams = useSearchParams();
+  
+  return (
+    <BuilderClient
+      startUpload={searchParams.get("upload") === "1"}
+      startNew={searchParams.get("new") === "1"}
+      startPrint={searchParams.get("print") === "1"}
+      documentId={searchParams.get("id") || undefined}
+    />
+  );
 }

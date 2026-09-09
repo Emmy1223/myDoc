@@ -1,3 +1,4 @@
+// components/builder/BuilderClient.tsx
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -8,9 +9,10 @@ import {
   LayoutTemplate,
   Cloud,
   CloudOff,
+  Save,
 } from "lucide-react";
 import type { CVData, TemplateId, Density } from "@/lib/cv-data";
-import { emptyCV, sampleCV } from "@/lib/cv-data";
+import { emptyCV, DEFAULT_SECTION_ORDER } from "@/lib/cv-data";
 import Dropzone from "./Dropzone";
 import ContentTab from "./ContentTab";
 import TemplatesTab from "./TemplatesTab";
@@ -21,10 +23,34 @@ import type { BulletStyle, BulletSpacing } from "./fields";
 type Tab = "content" | "templates" | "settings";
 
 const PAGE_PX: Record<"A4" | "Letter", { w: number; h: number }> = {
-  // mm -> px at 96dpi
   A4: { w: 793.7, h: 1122.5 },
   Letter: { w: 816, h: 1056 },
 };
+
+// localStorage key
+const STORAGE_KEY = "myDoc_cv_data";
+
+// Helper to save to localStorage
+function saveToLocalStorage(data: CVData) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.error("Failed to save to localStorage:", error);
+  }
+}
+
+// Helper to load from localStorage
+function loadFromLocalStorage(): CVData | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error("Failed to load from localStorage:", error);
+  }
+  return null;
+}
 
 export default function BuilderClient({
   startUpload = false,
@@ -37,7 +63,26 @@ export default function BuilderClient({
   startPrint?: boolean;
   documentId?: string;
 }) {
-  const [cv, setCv] = useState<CVData>(emptyCV);
+  // Initialize CV from localStorage or empty
+  const [cv, setCv] = useState<CVData>(() => {
+    // If starting new, use emptyCV
+    if (startNew) {
+      return emptyCV;
+    }
+    
+    // Try to load from localStorage
+    const saved = loadFromLocalStorage();
+    if (saved) {
+      return {
+        ...emptyCV,
+        ...saved,
+        sectionOrder: saved.sectionOrder || DEFAULT_SECTION_ORDER,
+      };
+    }
+    
+    return emptyCV;
+  });
+
   const [tab, setTab] = useState<Tab>("content");
   const [template, setTemplate] = useState<TemplateId>("folio");
   const [pageSize, setPageSize] = useState<"A4" | "Letter">("A4");
@@ -48,12 +93,59 @@ export default function BuilderClient({
   const [highlightDropzone, setHighlightDropzone] = useState(startUpload);
   const [saved, setSaved] = useState(true);
   const [scale, setScale] = useState(0.5);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   
-  // Bullet style state - this will be shared between editor and preview
+  // Bullet style state
   const [bulletStyle, setBulletStyle] = useState<BulletStyle>("dash");
   const [bulletSpacing, setBulletSpacing] = useState<BulletSpacing>("compact");
 
   const previewRef = useRef<HTMLDivElement>(null);
+
+  // Save to localStorage whenever CV changes
+  useEffect(() => {
+    if (autoSave) {
+      saveToLocalStorage(cv);
+      setSaved(true);
+      setLastSaved(new Date());
+    }
+  }, [cv, autoSave]);
+
+  // Also save when other settings change
+  useEffect(() => {
+    if (autoSave) {
+      const settings = {
+        template,
+        pageSize,
+        density,
+        docName,
+        bulletStyle,
+        bulletSpacing,
+      };
+      try {
+        localStorage.setItem("myDoc_settings", JSON.stringify(settings));
+      } catch (error) {
+        console.error("Failed to save settings:", error);
+      }
+    }
+  }, [template, pageSize, density, docName, bulletStyle, bulletSpacing, autoSave]);
+
+  // Load settings from localStorage
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem("myDoc_settings");
+      if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        if (settings.template) setTemplate(settings.template);
+        if (settings.pageSize) setPageSize(settings.pageSize);
+        if (settings.density) setDensity(settings.density);
+        if (settings.docName) setDocName(settings.docName);
+        if (settings.bulletStyle) setBulletStyle(settings.bulletStyle);
+        if (settings.bulletSpacing) setBulletSpacing(settings.bulletSpacing);
+      }
+    } catch (error) {
+      console.error("Failed to load settings:", error);
+    }
+  }, []);
 
   /* Fit the fixed-size A4 page into the available preview width */
   useEffect(() => {
@@ -72,10 +164,11 @@ export default function BuilderClient({
 
   /* Simulated auto-save indicator */
   useEffect(() => {
-    setSaved(false);
-    if (!autoSave) return;
-    const t = window.setTimeout(() => setSaved(true), 900);
-    return () => window.clearTimeout(t);
+    if (autoSave) {
+      setSaved(false);
+      const t = window.setTimeout(() => setSaved(true), 900);
+      return () => window.clearTimeout(t);
+    }
   }, [cv, docName, template, pageSize, density, autoSave, bulletStyle, bulletSpacing]);
 
   // Handle real PDF extraction
@@ -87,10 +180,27 @@ export default function BuilderClient({
   }, []);
 
   const handleDownload = () => {
+    saveToLocalStorage(cv);
     window.print();
   };
 
+  // Manual save
+  const handleManualSave = () => {
+    saveToLocalStorage(cv);
+    setSaved(true);
+    setLastSaved(new Date());
+  };
+
   const pagePx = PAGE_PX[pageSize];
+
+  // Get last saved time string
+  const getLastSavedText = () => {
+    if (!lastSaved) return "Not saved yet";
+    const diff = Math.floor((Date.now() - lastSaved.getTime()) / 1000);
+    if (diff < 60) return "Saved just now";
+    if (diff < 3600) return `Saved ${Math.floor(diff / 60)} minutes ago`;
+    return `Saved ${Math.floor(diff / 3600)} hours ago`;
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-paper md:h-screen md:flex-row">
@@ -105,23 +215,34 @@ export default function BuilderClient({
             <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
             Dashboard
           </Link>
-          <span
-            className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-              saved ? "text-stone-500" : "text-rust"
-            }`}
-          >
-            {saved ? (
-              <>
-                <Cloud className="h-3.5 w-3.5" strokeWidth={2} />
-                Saved
-              </>
-            ) : (
-              <>
-                <CloudOff className="h-3.5 w-3.5" strokeWidth={2} />
-                Saving…
-              </>
-            )}
-          </span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleManualSave}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-500 hover:text-rust"
+              title="Save manually"
+            >
+              <Save className="h-3.5 w-3.5" strokeWidth={2} />
+              Save
+            </button>
+            <span
+              className={`inline-flex items-center gap-1.5 text-xs font-medium ${
+                saved ? "text-stone-500" : "text-rust"
+              }`}
+              title={getLastSavedText()}
+            >
+              {saved ? (
+                <>
+                  <Cloud className="h-3.5 w-3.5" strokeWidth={2} />
+                  Saved
+                </>
+              ) : (
+                <>
+                  <CloudOff className="h-3.5 w-3.5" strokeWidth={2} />
+                  Saving…
+                </>
+              )}
+            </span>
+          </div>
         </div>
 
         {/* dropzone */}
