@@ -16,6 +16,7 @@ import ContentTab from "./ContentTab";
 import TemplatesTab from "./TemplatesTab";
 import SettingsTab from "./SettingsTab";
 import CvPage from "./CvPage";
+import type { BulletStyle, BulletSpacing } from "./fields";
 
 type Tab = "content" | "templates" | "settings";
 
@@ -36,19 +37,21 @@ export default function BuilderClient({
   startPrint?: boolean;
   documentId?: string;
 }) {
-  // ✅ FIXED: Use emptyCV instead of sampleCV
   const [cv, setCv] = useState<CVData>(emptyCV);
   const [tab, setTab] = useState<Tab>("content");
   const [template, setTemplate] = useState<TemplateId>("folio");
   const [pageSize, setPageSize] = useState<"A4" | "Letter">("A4");
   const [density, setDensity] = useState<Density>("normal");
-  // ✅ FIXED: Start with empty document name
   const [docName, setDocName] = useState("");
   const [showGuides, setShowGuides] = useState(true);
   const [autoSave, setAutoSave] = useState(true);
   const [highlightDropzone, setHighlightDropzone] = useState(startUpload);
   const [saved, setSaved] = useState(true);
   const [scale, setScale] = useState(0.5);
+  
+  // Bullet style state - this will be shared between editor and preview
+  const [bulletStyle, setBulletStyle] = useState<BulletStyle>("dash");
+  const [bulletSpacing, setBulletSpacing] = useState<BulletSpacing>("compact");
 
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -73,16 +76,13 @@ export default function BuilderClient({
     if (!autoSave) return;
     const t = window.setTimeout(() => setSaved(true), 900);
     return () => window.clearTimeout(t);
-  }, [cv, docName, template, pageSize, density, autoSave]);
+  }, [cv, docName, template, pageSize, density, autoSave, bulletStyle, bulletSpacing]);
 
   // Handle real PDF extraction
   const handleExtracted = useCallback((fileName: string, extractedData: CVData) => {
-    // Set the extracted CV data
     setCv(extractedData);
-    // Use the file name as the document name (remove extension)
     const nameWithoutExtension = fileName.replace(/\.[^/.]+$/, "").trim();
     setDocName(nameWithoutExtension || "Imported CV");
-    // Switch to content tab so user can review the extracted data
     setTab("content");
   }, []);
 
@@ -169,7 +169,16 @@ export default function BuilderClient({
 
         {/* tab content scroll area */}
         <div className="min-h-0 flex-1 overflow-y-auto">
-          {tab === "content" && <ContentTab cv={cv} setCv={setCv} />}
+          {tab === "content" && (
+            <ContentTab 
+              cv={cv} 
+              setCv={setCv}
+              bulletStyle={bulletStyle}
+              bulletSpacing={bulletSpacing}
+              onBulletStyleChange={setBulletStyle}
+              onBulletSpacingChange={setBulletSpacing}
+            />
+          )}
           {tab === "templates" && (
             <TemplatesTab template={template} setTemplate={setTemplate} />
           )}
@@ -246,6 +255,8 @@ export default function BuilderClient({
                   template={template}
                   density={density}
                   pageSize={pageSize}
+                  bulletStyle={bulletStyle}
+                  bulletSpacing={bulletSpacing}
                 />
               </div>
             </div>

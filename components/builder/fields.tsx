@@ -1,8 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import type { CVData, ExperienceItem, EducationItem } from "@/lib/cv-data";
 import { uid } from "@/lib/cv-data";
+
+// Add this type export so it can be used elsewhere
+export type BulletStyle = "dot" | "dash" | "none";
+export type BulletSpacing = "compact" | "normal" | "roomy";
 
 /* ------------------------------ atoms ------------------------------ */
 
@@ -121,10 +126,41 @@ export function SkillsEditor({
 export function ExperienceEditor({
   items,
   onChange,
+  bulletStyle: externalBulletStyle,
+  bulletSpacing: externalBulletSpacing,
+  onBulletStyleChange,
+  onBulletSpacingChange,
 }: {
   items: ExperienceItem[];
   onChange: (items: ExperienceItem[]) => void;
+  bulletStyle?: BulletStyle;
+  bulletSpacing?: BulletSpacing;
+  onBulletStyleChange?: (style: BulletStyle) => void;
+  onBulletSpacingChange?: (spacing: BulletSpacing) => void;
 }) {
+  // Use external state if provided, otherwise use internal state
+  const [internalBulletStyle, setInternalBulletStyle] = useState<BulletStyle>("dash");
+  const [internalBulletSpacing, setInternalBulletSpacing] = useState<BulletSpacing>("compact");
+
+  const bulletStyle = externalBulletStyle ?? internalBulletStyle;
+  const bulletSpacing = externalBulletSpacing ?? internalBulletSpacing;
+
+  const handleBulletStyleChange = (style: BulletStyle) => {
+    if (onBulletStyleChange) {
+      onBulletStyleChange(style);
+    } else {
+      setInternalBulletStyle(style);
+    }
+  };
+
+  const handleBulletSpacingChange = (spacing: BulletSpacing) => {
+    if (onBulletSpacingChange) {
+      onBulletSpacingChange(spacing);
+    } else {
+      setInternalBulletSpacing(spacing);
+    }
+  };
+
   function update(id: string, patch: Partial<ExperienceItem>) {
     onChange(items.map((it) => (it.id === id ? { ...it, ...patch } : it)));
   }
@@ -146,8 +182,58 @@ export function ExperienceEditor({
     onChange(items.filter((it) => it.id !== id));
   }
 
+  const getBulletSymbol = (style: BulletStyle) => {
+    switch (style) {
+      case "dot": return "·";
+      case "dash": return "-";
+      case "none": return "";
+    }
+  };
+
   return (
     <div className="space-y-4">
+      {/* Bullet Style Controls */}
+      <div className="rounded-md border border-stone-200 bg-stone-50 p-3 space-y-2">
+        <div className="flex items-center gap-4 flex-wrap">
+          <span className="text-xs font-medium text-stone-600">Bullet style:</span>
+          <div className="flex gap-2">
+            {(["dot", "dash", "none"] as const).map((style) => (
+              <button
+                key={style}
+                onClick={() => handleBulletStyleChange(style)}
+                className={`px-3 py-1 text-xs font-medium rounded border ${
+                  bulletStyle === style
+                    ? "border-rust bg-rust/10 text-rust"
+                    : "border-stone-300 text-stone-600 hover:border-stone-400"
+                }`}
+              >
+                {style === "dot" && "· Dot"}
+                {style === "dash" && "- Dash"}
+                {style === "none" && "None"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center gap-4 flex-wrap">
+          <span className="text-xs font-medium text-stone-600">Spacing:</span>
+          <div className="flex gap-2">
+            {(["compact", "normal", "roomy"] as const).map((spacing) => (
+              <button
+                key={spacing}
+                onClick={() => handleBulletSpacingChange(spacing)}
+                className={`px-3 py-1 text-xs font-medium rounded border ${
+                  bulletSpacing === spacing
+                    ? "border-rust bg-rust/10 text-rust"
+                    : "border-stone-300 text-stone-600 hover:border-stone-400"
+                }`}
+              >
+                {spacing.charAt(0).toUpperCase() + spacing.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {items.map((exp, i) => (
         <div key={exp.id} className="border border-stone-200 bg-stone-50 p-3">
           <div className="mb-3 flex items-center justify-between">
@@ -204,6 +290,26 @@ export function ExperienceEditor({
               placeholder={"Led the redesign of…\nReduced drop-off by…"}
               onChange={(v) => update(exp.id, { bullets: v })}
             />
+            
+            {/* Preview of how bullets will look */}
+            {exp.bullets.trim() && (
+              <div className="mt-1 rounded border border-stone-200 bg-white p-3">
+                <p className="text-xs font-medium text-stone-500 mb-2">Preview:</p>
+                <div className={`space-y-[${
+                  bulletSpacing === "compact" ? "1px" : 
+                  bulletSpacing === "normal" ? "2px" : "3px"
+                }]`}>
+                  {exp.bullets.split("\n").filter(b => b.trim()).map((b, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-sm text-stone-700">
+                      {bulletStyle !== "none" && (
+                        <span className="text-stone-500 min-w-[14px]">{getBulletSymbol(bulletStyle)}</span>
+                      )}
+                      <span>{b.trim()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ))}

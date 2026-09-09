@@ -10,6 +10,7 @@ import {
   ExperienceEditor,
   EducationEditor,
 } from "./fields";
+import type { BulletStyle, BulletSpacing } from "./fields";
 
 type SectionKey = "personal" | "experience" | "education" | "skills";
 
@@ -24,51 +25,52 @@ const sections: {
   { key: "skills", label: "Skills", icon: Wrench },
 ];
 
-// Helper to get field instructions
+// Field instructions
 const fieldInstructions = {
   fullName: {
     placeholder: "e.g. Maya Okafor, John Smith",
-    hint: "Enter your full legal name as it should appear on your CV",
-    example: "Maya Okafor"
+    hint: "Enter your full legal name as it should appear on your CV"
   },
   title: {
     placeholder: "e.g. Senior Product Designer, Full Stack Developer",
-    hint: "Your current or most relevant professional title",
-    example: "Senior Product Designer"
+    hint: "Your current or most relevant professional title"
   },
   email: {
     placeholder: "e.g. maya@email.com, john@company.com",
-    hint: "Professional email address you check regularly",
-    example: "maya.okafor@example.com"
+    hint: "Professional email address you check regularly"
   },
   phone: {
     placeholder: "e.g. +44 7700 900 321, +1 234 567 8900",
-    hint: "Include country code for international applications",
-    example: "+44 7700 900 321"
+    hint: "Include country code for international applications"
   },
   location: {
     placeholder: "e.g. London, UK | New York, NY | Remote",
-    hint: "Your current city and country (or 'Remote' if applicable)",
-    example: "London, UK"
+    hint: "Your current city and country (or 'Remote' if applicable)"
   },
   website: {
     placeholder: "e.g. maya.design, github.com/username",
-    hint: "Portfolio, personal website, or LinkedIn profile URL",
-    example: "mayaokafor.design"
+    hint: "Portfolio, personal website, or LinkedIn profile URL"
   },
   summary: {
-    placeholder: "Experienced Product Designer with 8+ years in fintech, passionate about...",
-    hint: "2-3 sentences highlighting your expertise, key achievements, and what you bring",
-    example: "Product designer with eight years of experience turning complicated workflows into calm, legible software."
+    placeholder: "Experienced Product Designer with 8+ years in fintech...",
+    hint: "2-3 sentences highlighting your expertise, key achievements, and what you bring"
   }
 };
 
 export default function ContentTab({
   cv,
   setCv,
+  bulletStyle = "dash",
+  bulletSpacing = "compact",
+  onBulletStyleChange,
+  onBulletSpacingChange,
 }: {
   cv: CVData;
   setCv: (updater: (prev: CVData) => CVData) => void;
+  bulletStyle?: BulletStyle;
+  bulletSpacing?: BulletSpacing;
+  onBulletStyleChange?: (style: BulletStyle) => void;
+  onBulletSpacingChange?: (spacing: BulletSpacing) => void;
 }) {
   const [open, setOpen] = useState<Record<SectionKey, boolean>>({
     personal: true,
@@ -80,26 +82,6 @@ export default function ContentTab({
   function toggle(key: SectionKey) {
     setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
   }
-
-  // Check if a field should show a placeholder value in the UI
-  const shouldShowPlaceholder = (value: string, fieldKey: keyof typeof fieldInstructions) => {
-    // If the value is empty or matches any of the example placeholders
-    if (!value || value.trim() === "") return true;
-    
-    const examples = [
-      fieldInstructions[fieldKey]?.example,
-      "Maya Okafor",
-      "Senior Product Designer",
-      "maya.okafor@example.com",
-      "+44 7700 900 321",
-      "London, UK",
-      "mayaokafor.design",
-      "Product designer with eight years of experience turning complicated workflows into calm, legible software."
-    ];
-    
-    // If the value matches any example, treat it as a placeholder
-    return examples.some(ex => ex && value.trim() === ex);
-  };
 
   return (
     <div className="border-t border-stone-200">
@@ -233,6 +215,10 @@ export default function ContentTab({
                       onChange={(items) =>
                         setCv((prev) => ({ ...prev, experience: items }))
                       }
+                      bulletStyle={bulletStyle}
+                      bulletSpacing={bulletSpacing}
+                      onBulletStyleChange={onBulletStyleChange}
+                      onBulletSpacingChange={onBulletSpacingChange}
                     />
                   </div>
                 )}

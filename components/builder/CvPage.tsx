@@ -23,12 +23,32 @@ const densityGap: Record<Density, string> = {
   roomy: "7mm",
 };
 
+// Bullet style options
+type BulletStyle = "dot" | "dash" | "none";
+
+// Default bullet style - can be passed as prop or set globally
+const DEFAULT_BULLET_STYLE: BulletStyle = "dash";
+
+// Bullet symbol mapping
+const bulletSymbols = {
+  dot: "·",
+  dash: "—",
+  none: "",
+};
+
+// Spacing options for bullet points
+const bulletSpacingMap = {
+  compact: "0.5mm",
+  normal: "1mm",
+  roomy: "1.5mm",
+};
+
 /** Render fallback text in light gray when a field is empty. */
 function Or({ value, fallback }: { value: string; fallback: string }) {
   return value.trim() ? (
     <>{value}</>
   ) : (
-    <span className="text-stone-300">{fallback}</span>
+    <span className="text-gray-300">{fallback}</span>
   );
 }
 
@@ -48,7 +68,7 @@ function ContactItems({ cv, dark = false }: { cv: CVData; dark?: boolean }) {
   ].filter((i) => i.value || i.fallback);
 
   return (
-    <ul className={dark ? "space-y-1.5 text-stone-200" : "flex flex-wrap items-center gap-x-3 gap-y-1"}>
+    <ul className={dark ? "space-y-1.5 text-gray-300" : "flex flex-wrap items-center gap-x-3 gap-y-1"}>
       {items.map((item, i) => {
         const Icon = item.icon;
         const empty = !item.value.trim();
@@ -56,20 +76,20 @@ function ContactItems({ cv, dark = false }: { cv: CVData; dark?: boolean }) {
           <li
             key={i}
             className={`flex items-center gap-1.5 text-[8.5pt] leading-relaxed ${
-              dark ? "" : ""
-            } ${empty ? "text-stone-500" : ""}`}
+              dark ? "text-gray-300" : "text-black"
+            } ${empty ? "text-gray-400" : ""}`}
           >
             <Icon
               className={`h-[9pt] w-[9pt] shrink-0 ${
-                dark ? "text-orange-400" : "text-rust"
+                dark ? "text-gray-400" : "text-black"
               }`}
               strokeWidth={1.75}
             />
-            <span className={empty ? "text-stone-500" : ""}>
+            <span className={empty ? "text-gray-400" : dark ? "text-gray-200" : "text-black"}>
               {empty ? item.fallback : item.value}
             </span>
             {!dark && i < items.length - 1 && (
-              <span className="ml-1.5 text-stone-300">/</span>
+              <span className="ml-1.5 text-gray-400">/</span>
             )}
           </li>
         );
@@ -79,17 +99,71 @@ function ContactItems({ cv, dark = false }: { cv: CVData; dark?: boolean }) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Bullet List Component - Handles bullet styling and spacing */
+/* ------------------------------------------------------------------ */
+function BulletList({ 
+  items, 
+  bulletStyle = DEFAULT_BULLET_STYLE,
+  spacing = "normal",
+  className = "",
+  emptyText = "Describe what you did and what changed because of it."
+}: { 
+  items: string[];
+  bulletStyle?: BulletStyle;
+  spacing?: "compact" | "normal" | "roomy";
+  className?: string;
+  emptyText?: string;
+}) {
+  const displayItems = items.length > 0 ? items : [emptyText];
+  const isEmpty = items.length === 0;
+  const symbol = bulletSymbols[bulletStyle];
+  const gapSize = bulletSpacingMap[spacing];
+
+  return (
+    <ul className={`space-y-[${gapSize}] ${className}`}>
+      {displayItems.map((item, index) => (
+        <li
+          key={index}
+          className={`flex gap-[2mm] text-[9.5pt] leading-[1.55] ${
+            isEmpty ? "text-gray-400" : "text-black"
+          }`}
+        >
+          {bulletStyle !== "none" && (
+            <span className="shrink-0 text-black min-w-[8pt] text-center">
+              {symbol}
+            </span>
+          )}
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Template 1 — Folio: single-column editorial                          */
 /* ------------------------------------------------------------------ */
-function Folio({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
+function Folio({ 
+  cv, 
+  pad, 
+  gap,
+  bulletStyle = DEFAULT_BULLET_STYLE,
+  bulletSpacing = "normal",
+}: { 
+  cv: CVData; 
+  pad: string; 
+  gap: string;
+  bulletStyle?: BulletStyle;
+  bulletSpacing?: "compact" | "normal" | "roomy";
+}) {
   return (
-    <div style={{ padding: pad }} className="flex h-full flex-col">
+    <div style={{ padding: pad }} className="flex h-full flex-col bg-white">
       {/* Header */}
-      <header className="border-b-2 border-stone-900 pb-[4mm]">
-        <h1 className="font-display text-[27pt] font-extrabold leading-none tracking-[-0.02em]">
+      <header className="border-b-2 border-black pb-[4mm]">
+        <h1 className="font-display text-[27pt] font-extrabold leading-none tracking-[-0.02em] text-black">
           <Or value={cv.fullName} fallback="Your Name" />
         </h1>
-        <p className="mt-[2mm] text-[11pt] font-semibold uppercase tracking-[0.14em] text-rust">
+        <p className="mt-[2mm] text-[11pt] font-semibold tracking-[0.14em] text-black">
           <Or value={cv.title} fallback="Job Title" />
         </p>
         <div className="mt-[3mm]">
@@ -100,7 +174,7 @@ function Folio({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
       {cv.summary.trim() && (
         <section style={{ marginTop: gap }}>
           <FolioLabel>Profile</FolioLabel>
-          <p className="mt-[2mm] text-[9.5pt] leading-[1.65] text-stone-700">
+          <p className="mt-[2mm] text-[9.5pt] leading-[1.65] text-black">
             {cv.summary}
           </p>
         </section>
@@ -116,39 +190,30 @@ function Folio({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
             <div
               key={exp.id}
               style={{ paddingBottom: gap }}
-              className={i > 0 || cv.experience.length === 0 ? "border-t border-stone-200" : ""}
+              className={i > 0 || cv.experience.length === 0 ? "border-t border-gray-300" : ""}
             >
               <div style={{ paddingTop: i > 0 || cv.experience.length === 0 ? gap : 0 }}>
                 <div className="flex items-baseline justify-between gap-4">
-                  <h3 className="text-[11pt] font-bold text-ink">
+                  <h3 className="text-[11pt] font-bold text-black">
                     <Or value={exp.role} fallback="Role Title" />
                   </h3>
-                  <span className="shrink-0 text-[8.5pt] font-medium tabular-nums text-stone-500">
+                  <span className="shrink-0 text-[8.5pt] font-medium tabular-nums text-gray-600">
                     <Or value={`${exp.start}${exp.start || exp.end ? " – " : ""}${exp.end}`} fallback="20XX – Present" />
                   </span>
                 </div>
-                <p className="mt-[0.5mm] text-[9pt] font-semibold text-rust">
+                <p className="mt-[0.5mm] text-[9pt] font-semibold text-black">
                   <Or
                     value={[exp.company, exp.location].filter(Boolean).join(" · ")}
                     fallback="Company · City"
                   />
                 </p>
-                <ul className="mt-[1.5mm] space-y-[1mm]">
-                  {(bulletsFrom(exp.bullets).length
-                    ? bulletsFrom(exp.bullets)
-                    : ["Describe what you did and what changed because of it."]
-                  ).map((b, j) => (
-                    <li
-                      key={j}
-                      className={`flex gap-[2mm] text-[9.5pt] leading-[1.55] ${
-                        exp.bullets.trim() ? "text-stone-700" : "text-stone-300"
-                      }`}
-                    >
-                      <span className="text-rust">—</span>
-                      <span>{b}</span>
-                    </li>
-                  ))}
-                </ul>
+                {/* Bullet points with dynamic style and spacing */}
+                <BulletList 
+                  items={bulletsFrom(exp.bullets)}
+                  bulletStyle={bulletStyle}
+                  spacing={bulletSpacing}
+                  className="mt-[1.5mm]"
+                />
               </div>
             </div>
           ))}
@@ -164,18 +229,18 @@ function Folio({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
           ).map((ed) => (
             <div key={ed.id}>
               <div className="flex items-baseline justify-between gap-4">
-                <h3 className="text-[10.5pt] font-bold text-ink">
+                <h3 className="text-[10.5pt] font-bold text-black">
                   <Or value={ed.degree} fallback="Degree Title" />
                 </h3>
-                <span className="shrink-0 text-[8.5pt] font-medium tabular-nums text-stone-500">
+                <span className="shrink-0 text-[8.5pt] font-medium tabular-nums text-gray-600">
                   <Or value={`${ed.start}${ed.start || ed.end ? " – " : ""}${ed.end}`} fallback="20XX – 20XX" />
                 </span>
               </div>
-              <p className="mt-[0.5mm] text-[9pt] font-semibold text-rust">
+              <p className="mt-[0.5mm] text-[9pt] font-semibold text-black">
                 <Or value={ed.school} fallback="Institution Name" />
               </p>
               {ed.detail.trim() && (
-                <p className="mt-[1mm] text-[9pt] leading-[1.55] text-stone-600">
+                <p className="mt-[1mm] text-[9pt] leading-[1.55] text-gray-700">
                   {ed.detail}
                 </p>
               )}
@@ -192,12 +257,12 @@ function Folio({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
               <span
                 key={i}
                 className={`text-[9pt] ${
-                  cv.skills.length ? "text-stone-700" : "text-stone-300"
+                  cv.skills.length ? "text-black" : "text-gray-400"
                 }`}
               >
                 {s}
                 {i < (cv.skills.length ? cv.skills.length : 2) - 1 && (
-                  <span className="ml-[4mm] text-rust">·</span>
+                  <span className="ml-[4mm] text-black">·</span>
                 )}
               </span>
             )
@@ -211,10 +276,10 @@ function Folio({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
 function FolioLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-[3mm]">
-      <span className="shrink-0 text-[9pt] font-bold uppercase tracking-[0.18em] text-rust">
+      <span className="shrink-0 text-[9pt] font-bold uppercase tracking-[0.18em] text-black">
         {children}
       </span>
-      <span className="h-px flex-1 bg-stone-300" />
+      <span className="h-px flex-1 bg-gray-400" />
     </div>
   );
 }
@@ -222,19 +287,31 @@ function FolioLabel({ children }: { children: React.ReactNode }) {
 /* ------------------------------------------------------------------ */
 /* Template 2 — Ledger: dark side rail + main column                    */
 /* ------------------------------------------------------------------ */
-function Ledger({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
+function Ledger({ 
+  cv, 
+  pad, 
+  gap,
+  bulletStyle = DEFAULT_BULLET_STYLE,
+  bulletSpacing = "compact",
+}: { 
+  cv: CVData; 
+  pad: string; 
+  gap: string;
+  bulletStyle?: BulletStyle;
+  bulletSpacing?: "compact" | "normal" | "roomy";
+}) {
   return (
-    <div className="flex h-full">
+    <div className="flex h-full bg-white">
       {/* Side rail */}
-      <aside className="w-[36%] bg-stone-900 py-[14mm] pl-[10mm] pr-[6mm] text-white">
-        <p className="text-[8.5pt] font-bold uppercase tracking-[0.2em] text-orange-400">
+      <aside className="w-[36%] bg-gray-800 py-[14mm] pl-[10mm] pr-[6mm] text-white">
+        <p className="text-[8.5pt] font-bold uppercase tracking-[0.2em] text-white">
           Contact
         </p>
         <div className="mt-[3mm]">
           <ContactItems cv={cv} dark />
         </div>
 
-        <p className="mt-[7mm] text-[8.5pt] font-bold uppercase tracking-[0.2em] text-orange-400">
+        <p className="mt-[7mm] text-[8.5pt] font-bold uppercase tracking-[0.2em] text-white">
           Skills
         </p>
         <ul className="mt-[3mm]">
@@ -242,8 +319,8 @@ function Ledger({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
             (s, i) => (
               <li
                 key={i}
-                className={`border-b border-stone-700 py-[1.5mm] text-[9pt] ${
-                  cv.skills.length ? "text-stone-200" : "text-stone-500"
+                className={`border-b border-gray-600 py-[1.5mm] text-[9pt] ${
+                  cv.skills.length ? "text-gray-200" : "text-gray-500"
                 }`}
               >
                 {s}
@@ -252,7 +329,7 @@ function Ledger({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
           )}
         </ul>
 
-        <p className="mt-[7mm] text-[8.5pt] font-bold uppercase tracking-[0.2em] text-orange-400">
+        <p className="mt-[7mm] text-[8.5pt] font-bold uppercase tracking-[0.2em] text-white">
           Education
         </p>
         <div className="mt-[3mm] space-y-[4mm]">
@@ -264,10 +341,10 @@ function Ledger({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
               <p className="text-[9.5pt] font-bold leading-snug text-white">
                 <Or value={ed.degree} fallback="Degree Title" />
               </p>
-              <p className="mt-[0.5mm] text-[8.5pt] text-stone-400">
+              <p className="mt-[0.5mm] text-[8.5pt] text-gray-400">
                 <Or value={ed.school} fallback="Institution" />
               </p>
-              <p className="mt-[0.5mm] text-[8pt] tabular-nums text-stone-500">
+              <p className="mt-[0.5mm] text-[8pt] tabular-nums text-gray-500">
                 <Or value={`${ed.start}${ed.start || ed.end ? " – " : ""}${ed.end}`} fallback="20XX – 20XX" />
               </p>
             </div>
@@ -276,26 +353,26 @@ function Ledger({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
       </aside>
 
       {/* Main */}
-      <div style={{ padding: pad }} className="min-w-0 flex-1">
-        <header className="border-b-2 border-stone-900 pb-[4mm]">
-          <h1 className="font-display text-[26pt] font-extrabold leading-none tracking-[-0.02em]">
+      <div style={{ padding: pad }} className="min-w-0 flex-1 bg-white">
+        <header className="border-b-2 border-black pb-[4mm]">
+          <h1 className="font-display text-[26pt] font-extrabold leading-none tracking-[-0.02em] text-black">
             <Or value={cv.fullName} fallback="Your Name" />
           </h1>
-          <p className="mt-[2mm] text-[10.5pt] font-semibold uppercase tracking-[0.14em] text-rust">
+          <p className="mt-[2mm] text-[10.5pt] font-semibold tracking-[0.14em] text-black">
             <Or value={cv.title} fallback="Job Title" />
           </p>
         </header>
 
         {cv.summary.trim() && (
           <section style={{ marginTop: gap }}>
-            <p className="text-[9.5pt] leading-[1.65] text-stone-700">
+            <p className="text-[9.5pt] leading-[1.65] text-black">
               {cv.summary}
             </p>
           </section>
         )}
 
         <section style={{ marginTop: gap }}>
-          <p className="text-[9pt] font-bold uppercase tracking-[0.18em] text-rust">
+          <p className="text-[9pt] font-bold uppercase tracking-[0.18em] text-black">
             Experience
           </p>
           <div className="mt-[2.5mm]">
@@ -306,38 +383,29 @@ function Ledger({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
               <div
                 key={exp.id}
                 style={{ paddingBottom: gap }}
-                className={i > 0 || cv.experience.length === 0 ? "border-t border-stone-200 pt-[4mm]" : ""}
+                className={i > 0 || cv.experience.length === 0 ? "border-t border-gray-300 pt-[4mm]" : ""}
               >
                 <div className="flex items-baseline justify-between gap-3">
-                  <h3 className="text-[10.5pt] font-bold">
+                  <h3 className="text-[10.5pt] font-bold text-black">
                     <Or value={exp.role} fallback="Role Title" />
                   </h3>
-                  <span className="shrink-0 text-[8pt] font-medium tabular-nums text-stone-500">
+                  <span className="shrink-0 text-[8pt] font-medium tabular-nums text-gray-600">
                     <Or value={`${exp.start}${exp.start || exp.end ? " – " : ""}${exp.end}`} fallback="20XX – Present" />
                   </span>
                 </div>
-                <p className="mt-[0.5mm] text-[8.5pt] font-semibold uppercase tracking-wide text-stone-500">
+                <p className="mt-[0.5mm] text-[8.5pt] font-semibold uppercase tracking-wide text-gray-700">
                   <Or
                     value={[exp.company, exp.location].filter(Boolean).join(" — ")}
                     fallback="Company — City"
                   />
                 </p>
-                <ul className="mt-[1.5mm] space-y-[1mm]">
-                  {(bulletsFrom(exp.bullets).length
-                    ? bulletsFrom(exp.bullets)
-                    : ["Describe what you did and what changed because of it."]
-                  ).map((b, j) => (
-                    <li
-                      key={j}
-                      className={`flex gap-[2mm] text-[9pt] leading-[1.5] ${
-                        exp.bullets.trim() ? "text-stone-700" : "text-stone-300"
-                      }`}
-                    >
-                      <span className="font-bold text-rust">·</span>
-                      <span>{b}</span>
-                    </li>
-                  ))}
-                </ul>
+                {/* Bullet points with dynamic style and spacing */}
+                <BulletList 
+                  items={bulletsFrom(exp.bullets)}
+                  bulletStyle={bulletStyle}
+                  spacing={bulletSpacing}
+                  className="mt-[1.5mm]"
+                />
               </div>
             ))}
           </div>
@@ -350,24 +418,36 @@ function Ledger({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
 /* ------------------------------------------------------------------ */
 /* Template 3 — Slab: mono labels, indented rules                       */
 /* ------------------------------------------------------------------ */
-function Slab({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
+function Slab({ 
+  cv, 
+  pad, 
+  gap,
+  bulletStyle = DEFAULT_BULLET_STYLE,
+  bulletSpacing = "normal",
+}: { 
+  cv: CVData; 
+  pad: string; 
+  gap: string;
+  bulletStyle?: BulletStyle;
+  bulletSpacing?: "compact" | "normal" | "roomy";
+}) {
   return (
-    <div style={{ padding: pad }} className="flex h-full flex-col">
+    <div style={{ padding: pad }} className="flex h-full flex-col bg-white">
       <header>
-        <h1 className="font-display text-[28pt] font-extrabold leading-none tracking-[-0.02em]">
+        <h1 className="font-display text-[28pt] font-extrabold leading-none tracking-[-0.02em] text-black">
           <Or value={cv.fullName} fallback="YOUR NAME" />
         </h1>
-        <p className="mt-[2mm] font-mono text-[9pt] uppercase tracking-[0.22em] text-rust">
+        <p className="mt-[2mm] font-mono text-[9pt] tracking-[0.22em] text-black">
           <Or value={cv.title} fallback="// job title" />
         </p>
-        <div className="mt-[3.5mm] border-t border-stone-900 pt-[3mm]">
+        <div className="mt-[3.5mm] border-t border-black pt-[3mm]">
           <ContactItems cv={cv} />
         </div>
       </header>
 
       {cv.summary.trim() && (
         <SlabSection title="01 / Profile" mt={gap}>
-          <p className="text-[9.5pt] leading-[1.7] text-stone-700">
+          <p className="text-[9.5pt] leading-[1.7] text-black">
             {cv.summary}
           </p>
         </SlabSection>
@@ -382,38 +462,30 @@ function Slab({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
             <div
               key={exp.id}
               style={{ paddingBottom: gap }}
-              className={i > 0 || cv.experience.length === 0 ? "border-t border-stone-200 pt-[4mm]" : ""}
+              className={i > 0 || cv.experience.length === 0 ? "border-t border-gray-300 pt-[4mm]" : ""}
             >
               <div className="flex items-baseline justify-between gap-4">
-                <h3 className="font-mono text-[10.5pt] font-bold tracking-tight">
+                <h3 className="font-mono text-[10.5pt] font-bold tracking-tight text-black">
                   <Or value={exp.role} fallback="role-title" />
                 </h3>
-                <span className="shrink-0 font-mono text-[8pt] tabular-nums text-stone-500">
+                <span className="shrink-0 font-mono text-[8pt] tabular-nums text-gray-600">
                   <Or value={`${exp.start}/${exp.end}`} fallback="20XX/PRESENT" />
                 </span>
               </div>
-              <p className="mt-[0.5mm] font-mono text-[8.5pt] uppercase tracking-[0.12em] text-stone-500">
+              <p className="mt-[0.5mm] font-mono text-[8.5pt] uppercase tracking-[0.12em] text-gray-700">
                 <Or
                   value={[exp.company, exp.location].filter(Boolean).join(" · ")}
                   fallback="company · city"
                 />
               </p>
-              <ul className="mt-[2mm] space-y-[1.5mm]">
-                {(bulletsFrom(exp.bullets).length
-                  ? bulletsFrom(exp.bullets)
-                  : ["Describe what you did and what changed because of it."]
-                ).map((b, j) => (
-                  <li
-                    key={j}
-                    className={`flex gap-[2.5mm] text-[9.5pt] leading-[1.6] ${
-                      exp.bullets.trim() ? "text-stone-700" : "text-stone-300"
-                    }`}
-                  >
-                    <span className="shrink-0 font-mono text-rust">→</span>
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
+              {/* Bullet points with dynamic style and spacing */}
+              <BulletList 
+                items={bulletsFrom(exp.bullets)}
+                bulletStyle={bulletStyle}
+                spacing={bulletSpacing}
+                className="mt-[2mm]"
+                emptyText="Describe what you did and what changed because of it."
+              />
             </div>
           ))}
         </div>
@@ -427,18 +499,18 @@ function Slab({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
           ).map((ed) => (
             <div key={ed.id} className={ed.id === "empty" ? "" : "mb-[3mm]"}>
               <div className="flex items-baseline justify-between gap-4">
-                <h3 className="font-mono text-[10pt] font-bold">
+                <h3 className="font-mono text-[10pt] font-bold text-black">
                   <Or value={ed.degree} fallback="degree-title" />
                 </h3>
-                <span className="shrink-0 font-mono text-[8pt] tabular-nums text-stone-500">
+                <span className="shrink-0 font-mono text-[8pt] tabular-nums text-gray-600">
                   <Or value={`${ed.start}/${ed.end}`} fallback="20XX/20XX" />
                 </span>
               </div>
-              <p className="mt-[0.5mm] font-mono text-[8.5pt] uppercase tracking-[0.12em] text-rust">
+              <p className="mt-[0.5mm] font-mono text-[8.5pt] uppercase tracking-[0.12em] text-black">
                 <Or value={ed.school} fallback="institution" />
               </p>
               {ed.detail.trim() && (
-                <p className="mt-[1mm] text-[9pt] leading-[1.55] text-stone-600">
+                <p className="mt-[1mm] text-[9pt] leading-[1.55] text-gray-700">
                   {ed.detail}
                 </p>
               )}
@@ -453,10 +525,10 @@ function Slab({ cv, pad, gap }: { cv: CVData; pad: string; gap: string }) {
             (s, i) => (
               <li
                 key={i}
-                className={`border border-stone-300 px-[2.5mm] py-[1mm] font-mono text-[8.5pt] uppercase tracking-wide ${
+                className={`border border-gray-400 px-[2.5mm] py-[1mm] font-mono text-[8.5pt] uppercase tracking-wide ${
                   cv.skills.length
-                    ? "border-stone-400 text-stone-700"
-                    : "text-stone-300"
+                    ? "border-gray-600 text-black"
+                    : "text-gray-400 border-gray-300"
                 }`}
               >
                 {s.toLowerCase().replace(/\s+/g, "-")}
@@ -480,7 +552,7 @@ function SlabSection({
 }) {
   return (
     <section style={{ marginTop: mt }}>
-      <p className="border-l-[3px] border-rust pl-[3mm] font-mono text-[9pt] font-bold uppercase tracking-[0.2em] text-ink">
+      <p className="border-l-[3px] border-black pl-[3mm] font-mono text-[9pt] font-bold uppercase tracking-[0.2em] text-black">
         {title}
       </p>
       <div className="pl-[calc(3mm+3px)] pt-[3mm]">{children}</div>
@@ -496,11 +568,15 @@ export default function CvPage({
   template,
   density = "normal",
   pageSize = "A4",
+  bulletStyle = "dash",
+  bulletSpacing = "compact",
 }: {
   cv: CVData;
   template: TemplateId;
   density?: Density;
   pageSize?: "A4" | "Letter";
+  bulletStyle?: BulletStyle;
+  bulletSpacing?: "compact" | "normal" | "roomy";
 }) {
   const size = pageSizes[pageSize];
   const pad = densityPadding[density];
@@ -508,7 +584,7 @@ export default function CvPage({
 
   return (
     <div
-      className="cv-page"
+      className="cv-page bg-white"
       style={
         {
           "--cv-page-w": size.w,
@@ -516,9 +592,33 @@ export default function CvPage({
         } as React.CSSProperties
       }
     >
-      {template === "folio" && <Folio cv={cv} pad={pad} gap={gap} />}
-      {template === "ledger" && <Ledger cv={cv} pad={pad} gap={gap} />}
-      {template === "slab" && <Slab cv={cv} pad={pad} gap={gap} />}
+      {template === "folio" && (
+        <Folio 
+          cv={cv} 
+          pad={pad} 
+          gap={gap} 
+          bulletStyle={bulletStyle}
+          bulletSpacing={bulletSpacing}
+        />
+      )}
+      {template === "ledger" && (
+        <Ledger 
+          cv={cv} 
+          pad={pad} 
+          gap={gap} 
+          bulletStyle={bulletStyle}
+          bulletSpacing={bulletSpacing}
+        />
+      )}
+      {template === "slab" && (
+        <Slab 
+          cv={cv} 
+          pad={pad} 
+          gap={gap} 
+          bulletStyle={bulletStyle}
+          bulletSpacing={bulletSpacing}
+        />
+      )}
     </div>
   );
 }
