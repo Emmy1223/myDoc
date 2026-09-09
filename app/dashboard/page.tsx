@@ -115,6 +115,7 @@ export default async function DashboardPage() {
                 <LogOut className="h-4 w-4" strokeWidth={1.75} />
               </button>
             </form>
+            
           </div>
         </div>
       </aside>
