@@ -36,12 +36,14 @@ export default function BuilderClient({
   startPrint?: boolean;
   documentId?: string;
 }) {
-  const [cv, setCv] = useState<CVData>(sampleCV);
+  // ✅ FIXED: Use emptyCV instead of sampleCV
+  const [cv, setCv] = useState<CVData>(emptyCV);
   const [tab, setTab] = useState<Tab>("content");
   const [template, setTemplate] = useState<TemplateId>("folio");
   const [pageSize, setPageSize] = useState<"A4" | "Letter">("A4");
   const [density, setDensity] = useState<Density>("normal");
-  const [docName, setDocName] = useState("Product Designer — London");
+  // ✅ FIXED: Start with empty document name
+  const [docName, setDocName] = useState("");
   const [showGuides, setShowGuides] = useState(true);
   const [autoSave, setAutoSave] = useState(true);
   const [highlightDropzone, setHighlightDropzone] = useState(startUpload);
