@@ -1,25 +1,11 @@
 // app/builder/page.tsx
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import { useSearchParams } from "next/navigation";
 
 const BuilderClient = dynamic(
   () => import("@/components/builder/BuilderClient"),
   { ssr: false }
 );
-
-function BuilderWithParams() {
-  const searchParams = useSearchParams();
-  
-  return (
-    <BuilderClient
-      startUpload={searchParams.get("upload") === "1"}
-      startNew={searchParams.get("new") === "1"}
-      startPrint={searchParams.get("print") === "1"}
-      documentId={searchParams.get("id") || undefined}
-    />
-  );
-}
 
 function BuilderLoading() {
   return (
@@ -35,7 +21,7 @@ function BuilderLoading() {
 export default function BuilderPage() {
   return (
     <Suspense fallback={<BuilderLoading />}>
-      <BuilderWithParams />
+      <BuilderClient />
     </Suspense>
   );
 }
