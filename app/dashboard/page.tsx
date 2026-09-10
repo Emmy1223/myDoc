@@ -1,3 +1,4 @@
+import SignOutButton from "@/components/auth/SignOutButton";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -107,15 +108,7 @@ export default async function DashboardPage() {
                 </p>
               </div>
             </div>
-            <form action="/api/auth/logout" method="POST">
-              <button
-                type="submit"
-                className="text-stone-500 hover:text-stone-300 transition-colors"
-                aria-label="Sign out"
-              >
-                <LogOut className="h-4 w-4" strokeWidth={1.75} />
-              </button>
-            </form>
+            <SignOutButton />
 
           </div>
         </div>

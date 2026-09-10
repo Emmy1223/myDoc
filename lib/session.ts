@@ -33,9 +33,25 @@ export function readSessionValue(value?: string) {
   return userId;
 }
 
-export async function getSessionUserId() {
+/**
+ * Get the current user id from either:
+ *  1. Our custom `mydoc_session` cookie (email/password flow)
+ *  2. Auth.js's session (Google sign-in flow)
+ */
+export async function getSessionUserId(): Promise<string | null> {
+  // Try our custom cookie first
   const cookieStore = await cookies();
-  return readSessionValue(cookieStore.get(sessionCookieName)?.value);
+  const fromCustomCookie = readSessionValue(cookieStore.get(sessionCookieName)?.value);
+  if (fromCustomCookie) return fromCustomCookie;
+
+  // Fall back to Auth.js session (Google sign-in)
+  try {
+    const { auth } = await import("@/lib/auth");
+    const session = await auth();
+    return session?.user?.id ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export function setSessionCookie(response: NextResponse, userId: string) {
