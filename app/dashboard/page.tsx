@@ -52,13 +52,14 @@ function SidebarLink({
 
 export default async function DashboardPage() {
   const userId = await getSessionUserId();
-  
+
   if (!userId) {
     redirect("/login?next=/dashboard");
   }
 
-  const data = getDashboardData(userId);
-  
+  // ✅ CHANGED: added `await`
+  const data = await getDashboardData(userId);
+
   if (!data) {
     redirect("/login?next=/dashboard");
   }
@@ -115,7 +116,7 @@ export default async function DashboardPage() {
                 <LogOut className="h-4 w-4" strokeWidth={1.75} />
               </button>
             </form>
-            
+
           </div>
         </div>
       </aside>
@@ -180,7 +181,8 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <ul className="mt-2">
-                {recentDocs.map((doc) => {
+                {/* ✅ CHANGED: typed `doc` to avoid implicit any */}
+                {recentDocs.map((doc: (typeof documents)[number]) => {
                   const status = doc.status as DocStatus;
                   return (
                     <li

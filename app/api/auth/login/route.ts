@@ -35,10 +35,11 @@ export async function POST(request: Request) {
       );
     }
 
+    // ✅ ONLY CHANGE: added `await` to both branches
     const result =
       mode === "signup"
-        ? registerUser({ name: body.name?.trim() ?? "", email, password })
-        : authenticateUser({ email, password });
+        ? await registerUser({ name: body.name?.trim() ?? "", email, password })
+        : await authenticateUser({ email, password });
 
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: 409 });
@@ -62,7 +63,9 @@ export async function POST(request: Request) {
     });
     setSessionCookie(response, result.user.id);
     return response;
-  } catch {
+  } catch (error) {
+    // Also log the actual error so we can debug next time
+    console.error("Login/signup error:", error);
     return NextResponse.json({ error: "The request could not be completed." }, { status: 400 });
   }
 }
