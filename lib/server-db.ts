@@ -85,10 +85,18 @@ function ensureSchema(): Promise<void> {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         email TEXT NOT NULL UNIQUE,
-        password_hash TEXT NOT NULL,
+        password_hash TEXT,
+        oauth_provider TEXT,
+        oauth_id TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `;
+
+    // Safe migrations for existing tables
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider TEXT`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_id TEXT`;
+    await sql`ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL`;
+    await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_oauth ON users(oauth_provider, oauth_id) WHERE oauth_provider IS NOT NULL`;
 
     await sql`
       CREATE TABLE IF NOT EXISTS documents (
@@ -155,7 +163,7 @@ function rowToUser(row: any): UserRecord {
     id: row.id,
     name: row.name,
     email: row.email,
-    passwordHash: row.password_hash,
+    passwordHash: row.password_hash ?? "",
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at),
   };
 }
@@ -231,6 +239,66 @@ export async function authenticateUser({
     return { error: "The email or password is incorrect." };
   }
   return { user };
+}
+
+export async function findOrCreateOAuthUser({
+  provider,
+  providerAccountId,
+  email,
+  name,
+}: {
+  provider: string;
+  providerAccountId: string;
+  email: string;
+  name: string;
+}): Promise<{ user: UserRecord } | { error: string }> {
+  await ensureSchema();
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // 1. Try to find by OAuth provider + id
+  const byOauth = (await sql`
+    SELECT * FROM users
+    WHERE oauth_provider = ${provider} AND oauth_id = ${providerAccountId}
+    LIMIT 1
+  `) as any[];
+
+  if (byOauth.length > 0) {
+    return { user: rowToUser(byOauth[0]) };
+  }
+
+  // 2. Try to find by email (link existing account)
+  const byEmail = (await sql`
+    SELECT * FROM users WHERE email = ${normalizedEmail} LIMIT 1
+  `) as any[];
+
+  if (byEmail.length > 0) {
+    // Link OAuth to existing account
+    await sql`
+      UPDATE users
+      SET oauth_provider = ${provider}, oauth_id = ${providerAccountId}
+      WHERE id = ${byEmail[0].id}
+    `;
+    return { user: rowToUser({ ...byEmail[0], oauth_provider: provider, oauth_id: providerAccountId }) };
+  }
+
+  // 3. Create a new user
+  const newUser: UserRecord = {
+    id: id("user"),
+    name: name.trim() || normalizedEmail.split("@")[0],
+    email: normalizedEmail,
+    passwordHash: "",
+    createdAt: now(),
+  };
+
+  await sql`
+    INSERT INTO users (id, name, email, password_hash, oauth_provider, oauth_id, created_at)
+    VALUES (
+      ${newUser.id}, ${newUser.name}, ${newUser.email}, NULL,
+      ${provider}, ${providerAccountId}, ${newUser.createdAt}
+    )
+  `;
+
+  return { user: newUser };
 }
 
 // ============================================================

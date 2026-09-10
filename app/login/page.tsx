@@ -6,12 +6,15 @@ export const metadata: Metadata = {
   title: "Sign in — myDoc",
 };
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { next?: string };
+  searchParams: Promise<{ next?: string }>;
 }) {
-  const next = searchParams.next?.startsWith("/") ? searchParams.next : "/dashboard";
+  // ✅ Await searchParams in Next.js 15+
+  const params = await searchParams;
+  const next = params.next?.startsWith("/") ? params.next : "/dashboard";
+
   return (
     <main className="min-h-screen bg-paper px-6 py-8 text-ink md:px-10">
       <div className="mx-auto flex max-w-6xl items-center justify-between border-b border-stone-200 pb-5">
