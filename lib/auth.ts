@@ -1,6 +1,7 @@
 // lib/auth.ts
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import GitHub from "next-auth/providers/github";
 import { findOrCreateOAuthUser } from "@/lib/server-db";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -10,6 +11,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      allowDangerousEmailAccountLinking: true,
+    }),
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
       allowDangerousEmailAccountLinking: true,
     }),
   ],
@@ -23,18 +29,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider !== "google") return false;
+      // ✅ Guard: account must exist
+      if (!account) return false;
+
+      const provider = account.provider;
+      if (provider !== "google" && provider !== "github") return false;
       if (!user.email) return false;
 
       const result = await findOrCreateOAuthUser({
-        provider: "google",
+        provider,
         providerAccountId: account.providerAccountId,
         email: user.email,
         name: user.name ?? profile?.name ?? user.email.split("@")[0],
       });
 
       if ("error" in result) {
-        console.error("OAuth signIn failed:", result.error);
+        console.error(`${provider} signIn failed:`, result.error);
         return false;
       }
 
