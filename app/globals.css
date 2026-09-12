@@ -95,3 +95,34 @@
     margin: 0;
   }
 }
+/* Prevent page breaks inside a single experience/education entry */
+.cv-entry {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Prevent page break between a section header and its first entry */
+.cv-section-heading {
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+/* Prevent page break after job title/company line so bullets stay attached */
+.cv-entry-header {
+  break-after: avoid;
+  page-break-after: avoid;
+}
+.cv-entry {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.cv-entry-header {
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.cv-section-heading {
+  break-after: avoid;
+  page-break-after: avoid;
+}

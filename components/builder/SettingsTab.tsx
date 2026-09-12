@@ -1,6 +1,5 @@
 "use client";
 
-import { ShieldCheck } from "lucide-react";
 import type { Density } from "@/lib/cv-data";
 import { Field } from "./fields";
 
@@ -15,6 +14,8 @@ export default function SettingsTab({
   setShowGuides,
   autoSave,
   setAutoSave,
+  autoFit,
+  setAutoFit,
 }: {
   docName: string;
   setDocName: (v: string) => void;
@@ -26,6 +27,8 @@ export default function SettingsTab({
   setShowGuides: (v: boolean) => void;
   autoSave: boolean;
   setAutoSave: (v: boolean) => void;
+  autoFit: boolean;
+  setAutoFit: (v: boolean) => void;
 }) {
   return (
     <div className="space-y-6 border-t border-stone-200 p-4">
@@ -68,9 +71,10 @@ export default function SettingsTab({
         <h3 className="font-display text-sm font-bold tracking-tightish text-ink">
           Content density
         </h3>
-        <div className="mt-3 grid grid-cols-3 gap-2">
+        <div className="mt-3 grid grid-cols-4 gap-2">
           {(
             [
+              ["auto", "Auto"],
               ["compact", "Compact"],
               ["normal", "Normal"],
               ["roomy", "Roomy"],
@@ -78,7 +82,7 @@ export default function SettingsTab({
           ).map(([value, label]) => (
             <button
               key={value}
-              onClick={() => setDensity(value)}
+              onClick={() => setDensity(value as Density)}
               className={`border px-2 py-2.5 text-xs font-semibold ${
                 density === value
                   ? "border-rust bg-orange-50 text-rust"
@@ -89,6 +93,15 @@ export default function SettingsTab({
             </button>
           ))}
         </div>
+        <p className="mt-2 text-xs text-stone-500">
+          {density === "auto"
+            ? "Auto picks the tightest layout that fits your CV on two pages."
+            : density === "compact"
+              ? "Compact: tightest spacing. Best for long CVs."
+              : density === "normal"
+                ? "Normal: balanced spacing. Good default."
+                : "Roomy: generous spacing. Best for short CVs."}
+        </p>
       </div>
 
       <div>
@@ -97,6 +110,12 @@ export default function SettingsTab({
         </h3>
         <div className="mt-3 divide-y divide-stone-200 border border-stone-200">
           <ToggleRow
+            label="Auto-fit to two pages"
+            hint="Reduce spacing and font size automatically if your CV exceeds two pages."
+            checked={autoFit}
+            onChange={setAutoFit}
+          />
+          <ToggleRow
             label="Show page guides"
             hint="Display margin rulers on the preview"
             checked={showGuides}
@@ -104,13 +123,12 @@ export default function SettingsTab({
           />
           <ToggleRow
             label="Auto-save while editing"
-            hint="Save changes to this device as you type"
+            hint="Save changes as you type"
             checked={autoSave}
             onChange={setAutoSave}
           />
         </div>
       </div>
-
     </div>
   );
 }

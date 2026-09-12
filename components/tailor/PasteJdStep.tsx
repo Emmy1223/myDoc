@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Sparkles, LoaderCircle } from "lucide-react";
+import { ArrowLeft, Sparkles, LoaderCircle, AlertCircle } from "lucide-react";
 
 type DocumentItem = {
   id: string;
@@ -23,18 +23,22 @@ export default function PasteJdStep({
   setJobDescription,
   onBack,
   onAnalyze,
+  analyzing,
+  analyzeError,
 }: {
   document: DocumentItem;
   jobDescription: string;
   setJobDescription: (value: string) => void;
   onBack: () => void;
   onAnalyze: () => void;
+  analyzing: boolean;
+  analyzeError: string | null;
 }) {
   const trimmed = jobDescription.trim();
   const charCount = trimmed.length;
   const tooShort = charCount < MIN_CHARS;
   const tooLong = charCount > MAX_CHARS;
-  const canAnalyze = !tooShort && !tooLong;
+  const canAnalyze = !tooShort && !tooLong && !analyzing;
 
   return (
     <div>
@@ -51,7 +55,6 @@ export default function PasteJdStep({
         </p>
       </div>
 
-      {/* Selected CV chip */}
       <div className="mt-6 flex items-center justify-between gap-3 border border-stone-200 bg-white px-4 py-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">
@@ -64,13 +67,13 @@ export default function PasteJdStep({
         <button
           type="button"
           onClick={onBack}
-          className="shrink-0 border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 hover:border-ink hover:text-ink transition-colors"
+          disabled={analyzing}
+          className="shrink-0 border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 hover:border-ink hover:text-ink disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
         >
           Change
         </button>
       </div>
 
-      {/* Textarea */}
       <div className="mt-6">
         <label
           htmlFor="job-description"
@@ -82,16 +85,15 @@ export default function PasteJdStep({
           id="job-description"
           value={jobDescription}
           onChange={(e) => setJobDescription(e.target.value)}
+          disabled={analyzing}
           rows={14}
           placeholder="Paste the full job description here. Include the role title, responsibilities, requirements, and any 'nice to have' skills."
-          className="w-full resize-y border border-stone-300 bg-white px-3 py-2.5 text-sm leading-6 text-ink outline-none focus:border-rust placeholder:text-stone-400"
+          className="w-full resize-y border border-stone-300 bg-white px-3 py-2.5 text-sm leading-6 text-ink outline-none focus:border-rust placeholder:text-stone-400 disabled:bg-stone-50 disabled:text-stone-500"
         />
         <div className="mt-2 flex items-center justify-between gap-3 text-xs">
           <span className="text-stone-500">
             {charCount < MIN_CHARS ? (
-              <>
-                Add at least {MIN_CHARS - charCount} more characters.
-              </>
+              <>Add at least {MIN_CHARS - charCount} more characters.</>
             ) : tooLong ? (
               <span className="text-red-700">
                 Too long. Please trim to under {MAX_CHARS.toLocaleString()} characters.
@@ -110,12 +112,19 @@ export default function PasteJdStep({
         </div>
       </div>
 
-      {/* Actions */}
+      {analyzeError && (
+        <div className="mt-4 flex items-start gap-2 border border-red-200 bg-red-50 px-3 py-2.5">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" strokeWidth={2} />
+          <p className="text-sm leading-6 text-red-800">{analyzeError}</p>
+        </div>
+      )}
+
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-2 border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-600 hover:border-ink hover:text-ink transition-colors"
+          disabled={analyzing}
+          className="inline-flex items-center gap-2 border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-600 hover:border-ink hover:text-ink disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" strokeWidth={2} />
           Back
@@ -127,8 +136,17 @@ export default function PasteJdStep({
           disabled={!canAnalyze}
           className="inline-flex items-center gap-2 bg-rust px-5 py-2.5 text-sm font-semibold text-white hover:bg-rust-dark disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
         >
-          <Sparkles className="h-4 w-4" strokeWidth={2} />
-          Analyze and tailor
+          {analyzing ? (
+            <>
+              <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={2} />
+              Analyzing…
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-4 w-4" strokeWidth={2} />
+              Analyze and tailor
+            </>
+          )}
         </button>
       </div>
     </div>

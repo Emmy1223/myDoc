@@ -140,7 +140,7 @@ export interface CVData {
 }
 
 export type TemplateId = "folio" | "ledger" | "slab";
-export type Density = "compact" | "normal" | "roomy";
+export type Density = "auto" | "compact" | "normal" | "roomy";
 
 let idCounter = 0;
 export const uid = () => `item-${Date.now().toString(36)}-${idCounter++}`;
