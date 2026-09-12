@@ -21,12 +21,6 @@ export default async function LoginPage({
         <Link href="/" className="font-display text-xl font-extrabold tracking-tightish text-ink">
           my<span className="text-rust">Doc</span>
         </Link>
-        <Link
-          href="/"
-          className="inline-flex min-h-11 items-center px-3 text-sm font-semibold text-stone-600 hover:bg-stone-100 hover:text-ink"
-        >
-          Back to home
-        </Link>
       </div>
       <div className="mx-auto flex min-h-[calc(100vh-105px)] max-w-md items-center justify-center py-16">
         <div className="w-full">
