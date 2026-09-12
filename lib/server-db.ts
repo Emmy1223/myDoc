@@ -124,6 +124,10 @@ function ensureSchema(): Promise<void> {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `;
+        // Migrations for the tailoring feature
+    await sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS tailored_from_id TEXT`;
+    await sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS source_job_description TEXT`;
+    await sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS match_report JSONB`;
 
     await sql`CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents(user_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_activities_user_id ON activities(user_id)`;

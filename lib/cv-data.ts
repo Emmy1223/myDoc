@@ -145,6 +145,27 @@ export type Density = "compact" | "normal" | "roomy";
 let idCounter = 0;
 export const uid = () => `item-${Date.now().toString(36)}-${idCounter++}`;
 
+// ============================================================
+// TAILORING TYPES
+// ============================================================
+
+export type TailorMatchReport = {
+  matchScore: number;
+  matchedKeywords: string[];
+  missingKeywords: string[];
+  companyName: string | null;
+  roleTitle: string | null;
+  summaryChange: {
+    original: string;
+    tailored: string;
+  } | null;
+  skillsChange: {
+    original: string[];
+    tailored: string[];
+    movedToBottom: string[];
+  } | null;
+};
+
 // ✅ ADD THIS - templates export
 export const templates: {
   id: TemplateId;

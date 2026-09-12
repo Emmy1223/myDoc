@@ -1,10 +1,10 @@
-import SignOutButton from "@/components/auth/SignOutButton";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { FileText, Settings, Plus, Pencil, Clock, MoreHorizontal, LogOut } from "lucide-react";
+import { FileText, Plus, Pencil, Clock, MoreHorizontal } from "lucide-react";
 import { getSessionUserId } from "@/lib/session";
 import { getDashboardData } from "@/lib/server-db";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 
 export const metadata: Metadata = {
   title: "Dashboard — myDoc",
@@ -24,33 +24,6 @@ const statusStyles: Record<DocStatus, string> = {
   completed: "bg-green-50 text-green-800 border-green-200",
 };
 
-function SidebarLink({
-  href,
-  icon: Icon,
-  label,
-  active,
-}: {
-  href: string;
-  icon: React.ElementType;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={`flex items-center gap-3 border px-4 py-2.5 text-sm font-medium transition-colors ${
-        active
-          ? "border-rust bg-rust text-white"
-          : "border-transparent text-stone-300 hover:border-stone-700 hover:bg-stone-800 hover:text-white"
-      }`}
-    >
-      <Icon className="h-4 w-4" strokeWidth={1.75} />
-      {label}
-    </Link>
-  );
-}
-
 export default async function DashboardPage() {
   const userId = await getSessionUserId();
 
@@ -58,7 +31,6 @@ export default async function DashboardPage() {
     redirect("/login?next=/dashboard");
   }
 
-  // ✅ CHANGED: added `await`
   const data = await getDashboardData(userId);
 
   if (!data) {
@@ -77,42 +49,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex min-h-screen bg-paper">
-      {/* Left sidebar */}
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-stone-800 bg-stone-900 md:flex print-hidden">
-        <div className="border-b border-stone-800 px-5 py-5">
-          <Link
-            href="/"
-            className="font-display text-xl font-extrabold tracking-tightish text-white"
-          >
-            my<span className="text-orange-400">Doc</span>
-          </Link>
-        </div>
-
-        <nav className="flex flex-col gap-1 p-3">
-          <SidebarLink href="/dashboard" icon={FileText} label="My Documents" active />
-          <SidebarLink href="/settings" icon={Settings} label="Settings" />
-        </nav>
-
-        <div className="mt-auto border-t border-stone-800 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center border border-stone-700 bg-stone-800 text-xs font-bold text-orange-400">
-                {initials}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-white">
-                  {user.name}
-                </p>
-                <p className="truncate text-xs text-stone-400">
-                  {documents.length} document{documents.length !== 1 ? "s" : ""}
-                </p>
-              </div>
-            </div>
-            <SignOutButton />
-
-          </div>
-        </div>
-      </aside>
+      {/* Left sidebar (client component with modal state) */}
+      <DashboardSidebar
+        user={user}
+        documentsCount={documents.length}
+        initials={initials}
+      />
 
       {/* Main area */}
       <div className="flex min-w-0 flex-1 flex-col">
@@ -174,7 +116,6 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <ul className="mt-2">
-                {/* ✅ CHANGED: typed `doc` to avoid implicit any */}
                 {recentDocs.map((doc: (typeof documents)[number]) => {
                   const status = doc.status as DocStatus;
                   return (

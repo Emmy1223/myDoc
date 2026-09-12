@@ -25,17 +25,17 @@ export async function POST(request: Request) {
     };
 
     if (body.action === "clone-last") {
-      const document = cloneMostRecentDocument(userId);
+      const document = await cloneMostRecentDocument(userId);
       if (!document) {
         return NextResponse.json(
           { error: "Create a document before cloning your last one." },
-          { status: 404 }
+          { status: 404 },
         );
       }
       return NextResponse.json({ document }, { status: 201 });
     }
 
-    const document = createDocument({
+    const document = await createDocument({
       userId,
       title: body.title ?? "Untitled document",
       kind: body.kind,
@@ -43,7 +43,11 @@ export async function POST(request: Request) {
       status: body.status,
     });
     return NextResponse.json({ document }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "The document could not be created." }, { status: 400 });
+  } catch (err) {
+    console.error("create document error:", err);
+    return NextResponse.json(
+      { error: "The document could not be created." },
+      { status: 400 },
+    );
   }
 }
