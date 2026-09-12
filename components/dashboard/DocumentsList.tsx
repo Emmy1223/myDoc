@@ -8,13 +8,13 @@ import {
   Clock,
   FilePlus2,
   LoaderCircle,
-  Pencil,
   Plus,
   Upload,
   X,
 } from "lucide-react";
 import DocumentThumbnail from "./DocumentThumbnail";
 import DocumentRowMenu, { type RowAction } from "./DocumentRowMenu";
+import DocumentPreviewModal from "./DocumentPreviewModal";
 
 type DocumentItem = {
   id: string;
@@ -29,18 +29,6 @@ type DocumentItem = {
 };
 
 type Notice = { tone: "error" | "success"; message: string } | null;
-
-const statusLabel: Record<DocumentItem["status"], string> = {
-  draft: "Draft",
-  "in-progress": "In progress",
-  completed: "Completed",
-};
-
-const statusStyles: Record<DocumentItem["status"], string> = {
-  draft: "bg-stone-100 text-stone-600 border-stone-200",
-  "in-progress": "bg-orange-50 text-rust border-orange-200",
-  completed: "bg-green-50 text-green-800 border-green-200",
-};
 
 export default function DocumentsList({
   userName,
@@ -63,6 +51,7 @@ export default function DocumentsList({
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [notice, setNotice] = useState<Notice>(null);
+  const [previewDoc, setPreviewDoc] = useState<DocumentItem | null>(null);
   const uploadInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -193,6 +182,12 @@ export default function DocumentsList({
   };
 
   const handleRowAction = async (doc: DocumentItem, action: RowAction) => {
+    if (action === "edit") {
+      setOpenMenuId(null);
+      router.push(`/builder?document=${encodeURIComponent(doc.id)}`);
+      return;
+    }
+
     if (action === "rename") {
       handleRenameStart(doc);
       return;
@@ -401,6 +396,7 @@ export default function DocumentsList({
                 <DocumentThumbnail
                   documentId={doc.id}
                   templateId={doc.templateId}
+                  onClick={() => setPreviewDoc(doc)}
                 />
 
                 <div className="min-w-0 flex-1">
@@ -434,20 +430,6 @@ export default function DocumentsList({
                   </p>
                 </div>
 
-                <span
-                  className={`border px-2.5 py-1 text-xs font-semibold ${statusStyles[doc.status]}`}
-                >
-                  {statusLabel[doc.status]}
-                </span>
-
-                <Link
-                  href={`/builder?document=${encodeURIComponent(doc.id)}`}
-                  className="inline-flex items-center gap-1.5 border border-stone-300 bg-white px-3.5 py-2 text-xs font-semibold text-ink transition-colors hover:border-rust hover:text-rust print-hidden"
-                >
-                  <Pencil className="h-3.5 w-3.5" strokeWidth={2} />
-                  Edit
-                </Link>
-
                 <div className="relative">
                   <button
                     type="button"
@@ -456,8 +438,6 @@ export default function DocumentsList({
                     onClick={() => setOpenMenuId(menuOpen ? null : doc.id)}
                     className="inline-flex items-center justify-center border border-transparent p-2 text-stone-500 transition-colors hover:border-stone-300 hover:text-ink"
                   >
-                    <Plus className="hidden h-4 w-4" />
-                    <span className="sr-only">Actions</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -501,6 +481,14 @@ export default function DocumentsList({
           />
         </div>
       )}
+
+      <DocumentPreviewModal
+        open={previewDoc !== null}
+        documentId={previewDoc?.id ?? null}
+        title={previewDoc?.title ?? ""}
+        templateId={previewDoc?.templateId ?? "folio"}
+        onClose={() => setPreviewDoc(null)}
+      />
     </div>
   );
 }

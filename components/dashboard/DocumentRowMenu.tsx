@@ -12,13 +12,13 @@ import {
 } from "lucide-react";
 
 export type RowAction =
+  | "edit"
   | "rename"
   | "duplicate"
   | "download"
   | "open"
   | "export-json"
   | "delete";
-
 export default function DocumentRowMenu({
   open,
   workingAction,
@@ -58,6 +58,7 @@ export default function DocumentRowMenu({
     icon: typeof Pencil;
     danger?: boolean;
   }[] = [
+    { action: "edit", label: "Edit in builder", icon: Pencil },
     { action: "rename", label: "Rename", icon: Pencil },
     { action: "duplicate", label: "Duplicate", icon: Copy },
     { action: "download", label: "Download PDF", icon: Download },

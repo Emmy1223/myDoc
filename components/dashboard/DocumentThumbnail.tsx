@@ -9,16 +9,20 @@ const THUMB_WIDTH = 52;
 const THUMB_HEIGHT = 68;
 const PAGE_WIDTH_PX = 793.7;
 const PAGE_HEIGHT_PX = 1122.5;
-const SCALE = THUMB_WIDTH / PAGE_WIDTH_PX;
 
 export default function DocumentThumbnail({
   documentId,
   templateId,
+  onClick,
+  size = "small",
 }: {
   documentId: string;
   templateId: string;
+  onClick?: () => void;
+  size?: "small" | "large";
 }) {
   const [cv, setCv] = useState<CVData | null>(null);
+  const [failed, setFailed] = useState(false);
   const loadedRef = useRef(false);
 
   useEffect(() => {
@@ -31,13 +35,17 @@ export default function DocumentThumbnail({
         const res = await fetch(
           `/api/documents/${encodeURIComponent(documentId)}`,
         );
-        if (!res.ok) return;
+        if (!res.ok) {
+          console.error("Thumbnail fetch failed:", res.status);
+          if (!cancelled) setFailed(true);
+          return;
+        }
         const result = (await res.json()) as {
           document?: { content?: Record<string, unknown> | null };
         };
         if (cancelled) return;
         const content = result.document?.content;
-        if (content) {
+        if (content && Object.keys(content).length > 0) {
           setCv({
             ...emptyCV,
             ...(content as Partial<CVData>),
@@ -47,8 +55,9 @@ export default function DocumentThumbnail({
         } else {
           setCv(emptyCV);
         }
-      } catch {
-        if (!cancelled) setCv(emptyCV);
+      } catch (err) {
+        console.error("Thumbnail error:", err);
+        if (!cancelled) setFailed(true);
       }
     })();
 
@@ -60,18 +69,22 @@ export default function DocumentThumbnail({
   const template: TemplateId =
     templateId === "ledger" || templateId === "slab" ? templateId : "folio";
 
-  return (
+  const width = size === "large" ? 595 : THUMB_WIDTH;
+  const height = size === "large" ? 842 : THUMB_HEIGHT;
+  const scale = width / PAGE_WIDTH_PX;
+
+  const inner = (
     <div
       className="relative shrink-0 overflow-hidden border border-stone-300 bg-white"
-      style={{ width: THUMB_WIDTH, height: THUMB_HEIGHT }}
-      aria-hidden
+      style={{ width, height }}
+      aria-hidden={onClick ? undefined : true}
     >
       {cv ? (
         <div
           style={{
             width: PAGE_WIDTH_PX,
             height: PAGE_HEIGHT_PX,
-            transform: `scale(${SCALE})`,
+            transform: `scale(${scale})`,
             transformOrigin: "top left",
             pointerEvents: "none",
           }}
@@ -85,11 +98,30 @@ export default function DocumentThumbnail({
             bulletSpacing="compact"
           />
         </div>
+      ) : failed ? (
+        <div className="flex h-full w-full items-center justify-center bg-stone-50 text-[10px] text-stone-400">
+          No preview
+        </div>
       ) : (
         <div className="flex h-full w-full items-center justify-center bg-stone-50">
-          <div className="h-5 w-5 animate-pulse rounded-full bg-stone-200" />
+          <div className="h-4 w-4 animate-pulse rounded-full bg-stone-200" />
         </div>
       )}
     </div>
   );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="shrink-0 cursor-zoom-in transition-opacity hover:opacity-80"
+        aria-label="Preview document"
+      >
+        {inner}
+      </button>
+    );
+  }
+
+  return inner;
 }
