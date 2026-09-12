@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   }
 
   const category = new URL(request.url).searchParams.get("category") ?? undefined;
-  const dashboard = getDashboardData(userId, category);
+  const dashboard = await getDashboardData(userId, category);
   if (!dashboard) {
     return NextResponse.json({ error: "Your session is no longer valid." }, { status: 401 });
   }
