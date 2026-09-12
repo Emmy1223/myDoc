@@ -70,9 +70,44 @@ export default function Dropzone({
         extractedText = await file.text();
       }
 
-      console.log("Raw extracted text:", extractedText.substring(0, 1000));
+            console.log("Raw extracted text:", extractedText.substring(0, 1000));
 
-      const structuredData = parseCVText(extractedText);
+      // ============================================================
+      // AI PARSING (primary) → regex fallback
+      // ============================================================
+      let structuredData: any = null;
+
+      try {
+        const response = await fetch("/api/parse-cv", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ text: extractedText }),
+        });
+
+        if (response.ok) {
+          const json = await response.json();
+          if (json?.data) {
+            structuredData = json.data;
+            console.log("✅ AI parser succeeded");
+          } else {
+            console.warn("AI parser returned no data, falling back");
+          }
+        } else {
+          console.warn(
+            "AI parser failed with status",
+            response.status,
+            "— falling back to regex",
+          );
+        }
+      } catch (err) {
+        console.warn("AI parser network error, falling back to regex:", err);
+      }
+
+      // Fallback to local regex parser if AI failed
+      if (!structuredData) {
+        console.log("⚙️ Using regex fallback parser");
+        structuredData = parseCVText(extractedText);
+      }
 
       setState("done");
       onExtracted(file.name, structuredData);
