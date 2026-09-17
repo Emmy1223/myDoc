@@ -1,0 +1,18 @@
+[33mcommit 6d6e6f71d2a2422d89426dc9aac6313088eafd1c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Emmy <faletiemmanuel28@gmail.com>
+Date:   Thu Sep 10 13:28:17 2026 +0100
+
+    Add Google OAuth sign-in with Auth.js
+
+ .env.local                          |   1 [31m-[m
+ .gitignore                          | Bin [31m165[m -> [32m209[m bytes
+ app/api/auth/[...nextauth]/route.ts |   6 [32m+++[m
+ app/layout.tsx                      |   5 [32m+[m[31m-[m
+ app/login/page.tsx                  |   9 [32m++[m[31m--[m
+ components/auth/LoginClient.tsx     |  62 [32m++++++++++++++++++++[m[31m-[m
+ lib/auth.ts                         |  74 [32m+++++++++++++++++++++++++[m
+ lib/server-db.ts                    |  72 [32m++++++++++++++++++++++++[m[31m-[m
+ package-lock.json                   | 104 [32m++++++++++++++++++++++++++++++++++++[m
+ package.json                        |   1 [32m+[m
+ test-db.js                          |   8 [31m---[m
+ 11 files changed, 325 insertions(+), 17 deletions(-)

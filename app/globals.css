@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: #fafaf9;
+    color: #1c1917;
+  }
+
+  ::selection {
+    background-color: #fed7aa;
+    color: #1c1917;
+  }
+
+  /* Crisp border-based focus rings */
+  *:focus-visible {
+    outline: 2px solid #c2410c;
+    outline-offset: 1px;
+  }
+
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+  }
+}
+
+@layer components {
+  /* The A4 / Letter page rendered on screen. transform: scale() is
+     applied inline for the editor preview; print removes the scale. */
+  .cv-page {
+    width: var(--cv-page-w, 210mm);
+    min-height: var(--cv-page-h, 297mm);
+    background: #ffffff;
+    color: #1c1917;
+    border: 1px solid #e7e5e4;
+    box-sizing: border-box;
+    overflow: visible;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+
+  .cv-preview-panel {
+    position: static !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  .cv-print-area {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+    overflow: visible;
+  }
+
+  .cv-sizer,
+  .cv-scale-wrap {
+    width: auto !important;
+    height: auto !important;
+    transform: none !important;
+  }
+
+  .cv-page {
+    border: none;
+    margin: 0;
+    /* No forced break. If the content fits in one page, this prints one page.
+       If the content overflows, the browser paginates naturally. */
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+}
+
+.cv-entry {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.cv-section-heading {
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.cv-entry-header {
+  break-after: avoid;
+  page-break-after: avoid;
+}
