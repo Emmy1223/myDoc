@@ -91,8 +91,8 @@ export default function DocEditor({
     content: body,
     editorProps: {
       attributes: {
-        class:
-          "doc-prose prose-neutral max-w-none min-h-[297mm] px-[20mm] py-[18mm] focus:outline-none",
+       class:
+  "doc-prose prose-neutral max-w-none px-4 py-6 md:min-h-[297mm] md:px-[20mm] md:py-[18mm] focus:outline-none",
       },
     },
     onUpdate: ({ editor }) => {

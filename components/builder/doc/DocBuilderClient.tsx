@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Cloud, CloudOff, FileDown, Save } from "lucide-react";
+import { ArrowLeft, Cloud, CloudOff, FileDown, Save } from "lucide-react";
+import Link from "next/link";
 import DocEditor from "./DocEditor";
 import DocToolbar from "./DocToolbar";
 import DocListRail, { type DocListItem } from "./DocListRail";
@@ -57,31 +58,20 @@ export default function DocBuilderClient({
         });
         const data = await res.json();
         if (cancelled) return;
-        const doc = data.document as FullDoc & { content?: unknown };
+        const doc = data.document as (FullDoc & { content?: unknown }) | undefined;
 
-        console.log("[load] raw doc from API:", {
-          id: doc.id,
-          title: doc.title,
-          hasContent: !!doc.content,
-          contentType: doc.content ? typeof doc.content : "null",
-          contentKeys: doc.content
-            ? Object.keys(doc.content as any)
-            : null,
-          isRich: isRichDocContent(doc.content),
-        });
+        if (!doc) {
+          // Document missing (deleted, wrong user, stale URL). Fall back.
+          setTitle("Untitled document");
+          setBody(emptyDocContent().doc);
+          setSaved(true);
+          return;
+        }
 
         setTitle(doc.title);
         if (isRichDocContent(doc.content)) {
-          console.log(
-            "[load] setting body from rich content. docLen =",
-            JSON.stringify(doc.content.doc).length,
-          );
           setBody(doc.content.doc);
         } else {
-          console.log(
-            "[load] NOT rich — falling back to empty doc. raw =",
-            doc.content,
-          );
           setBody(emptyDocContent().doc);
         }
         setSaved(true);
@@ -163,7 +153,6 @@ export default function DocBuilderClient({
   const handleBodyChange = useCallback(
     (next: RichDocNode) => {
       setBody(next);
-      
       if (loading) return;
       scheduleSave(title, next);
     },
@@ -210,10 +199,10 @@ export default function DocBuilderClient({
 
   const handleDownload = () => window.print();
 
-
   return (
-    <div className="flex h-screen w-full overflow-hidden">
-      {/* Left rail */}
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden md:h-screen md:flex-row">
+      {/* Left rail — on mobile it renders just the hamburger button;
+          on desktop it renders the full sidebar */}
       <DocListRail
         documents={documents}
         activeId={activeId}
@@ -224,15 +213,28 @@ export default function DocBuilderClient({
       {/* Main area */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Top bar */}
-        <div className="flex items-center justify-between border-b border-stone-200 bg-white px-5 py-3 print-hidden">
-          <input
-            value={title}
-            onChange={(e) => handleTitleChange(e.target.value)}
-            className="min-w-0 flex-1 bg-transparent font-display text-lg font-bold tracking-tightish text-ink outline-none placeholder:text-stone-400"
-            placeholder="Untitled document"
-            aria-label="Document title"
-          />
-          <div className="ml-4 flex items-center gap-3">
+        <div className="flex flex-col gap-2 border-b border-stone-200 bg-white px-3 py-2 print-hidden md:flex-row md:items-center md:justify-between md:gap-0 md:px-5 md:py-3">
+          {/* Row 1: back link + title */}
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <Link
+              href="/dashboard"
+              className="flex h-8 w-8 shrink-0 items-center justify-center border border-stone-300 bg-white text-stone-600 transition-colors hover:border-rust hover:text-rust print-hidden"
+              aria-label="Back to dashboard"
+              title="Back to dashboard"
+            >
+              <ArrowLeft className="h-4 w-4" strokeWidth={2} />
+            </Link>
+            <input
+              value={title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              className="min-w-0 flex-1 bg-transparent font-display text-base font-bold tracking-tightish text-ink outline-none placeholder:text-stone-400 md:text-lg"
+              placeholder="Untitled document"
+              aria-label="Document title"
+            />
+          </div>
+
+          {/* Row 2 (mobile) / same row (desktop): status + actions */}
+          <div className="flex items-center justify-between gap-2 md:ml-4 md:justify-end md:gap-3">
             <span
               className={`inline-flex items-center gap-1.5 text-xs font-medium ${
                 saved ? "text-stone-500" : "text-rust"
@@ -240,29 +242,36 @@ export default function DocBuilderClient({
             >
               {saved ? (
                 <>
-                  <Cloud className="h-3.5 w-3.5" strokeWidth={2} /> Saved
+                  <Cloud className="h-3.5 w-3.5" strokeWidth={2} />
+                  <span className="hidden sm:inline">Saved</span>
                 </>
               ) : (
                 <>
-                  <CloudOff className="h-3.5 w-3.5" strokeWidth={2} /> Unsaved
+                  <CloudOff className="h-3.5 w-3.5" strokeWidth={2} />
+                  <span className="hidden sm:inline">Unsaved</span>
                 </>
               )}
             </span>
-            <button
-              onClick={saveNow}
-              disabled={saved || !activeId}
-              className="inline-flex items-center gap-2 border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-rust hover:text-rust disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Save className="h-4 w-4" strokeWidth={2} />
-              Save
-            </button>
-            <button
-              onClick={handleDownload}
-              className="inline-flex items-center gap-2 bg-rust px-4 py-2 text-sm font-semibold text-white hover:bg-rust-dark"
-            >
-              <FileDown className="h-4 w-4" strokeWidth={2} />
-              Download PDF
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={saveNow}
+                disabled={saved || !activeId}
+                className="inline-flex items-center gap-1.5 border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-rust hover:text-rust disabled:cursor-not-allowed disabled:opacity-50 md:gap-2 md:px-4 md:py-2 md:text-sm"
+              >
+                <Save className="h-3.5 w-3.5 md:h-4 md:w-4" strokeWidth={2} />
+                <span className="hidden sm:inline">Save</span>
+              </button>
+              <button
+                onClick={handleDownload}
+                className="inline-flex items-center gap-1.5 bg-rust px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-rust-dark md:gap-2 md:px-4 md:py-2 md:text-sm"
+              >
+                <FileDown
+                  className="h-3.5 w-3.5 md:h-4 md:w-4"
+                  strokeWidth={2}
+                />
+                <span className="hidden sm:inline">Download PDF</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -271,7 +280,7 @@ export default function DocBuilderClient({
 
         {/* Canvas */}
         <div className="flex-1 overflow-auto bg-stone-200">
-          <div className="doc-print-area mx-auto my-8 w-[210mm] min-h-[297mm] bg-white shadow-sm">
+          <div className="doc-print-area mx-auto my-3 w-full max-w-[210mm] bg-white shadow-sm md:my-8 md:min-h-[297mm] md:w-[210mm]">
             <DocEditor
               key={activeId ?? "new"}
               body={body}

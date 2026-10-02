@@ -1,22 +1,10 @@
 import { redirect } from "next/navigation";
 import { getSessionUserId } from "@/lib/session";
 import { getDashboardData } from "@/lib/server-db";
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DocBuilderClient from "@/components/builder/doc/DocBuilderClient";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function initialsFrom(name: string) {
-  return (
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((p) => p[0]?.toUpperCase() ?? "")
-      .join("") || "U"
-  );
-}
 
 export default async function WritePage({
   searchParams,
@@ -30,6 +18,7 @@ export default async function WritePage({
   const data = await getDashboardData(userId);
   if (!data) redirect("/login");
 
+  // Only rich-text documents belong in this workspace.
   const docList = data.documents
     .filter((d) => d.kind === "Document")
     .map((d) => ({
@@ -39,18 +28,11 @@ export default async function WritePage({
     }));
 
   return (
-    <div className="flex min-h-screen bg-stone-950">
-      <DashboardSidebar
-        user={data.user}
-        documentsCount={data.documents.length}
-        initials={initialsFrom(data.user.name)}
+    <main className="flex h-[100dvh] w-full flex-col bg-stone-100">
+      <DocBuilderClient
+        initialDocuments={docList}
+        initialActiveId={requestedId ?? null}
       />
-      <main className="flex min-h-screen flex-1 flex-col bg-stone-100">
-        <DocBuilderClient
-          initialDocuments={docList}
-          initialActiveId={requestedId ?? null}
-        />
-      </main>
-    </div>
+    </main>
   );
 }
