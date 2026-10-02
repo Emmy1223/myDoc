@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FileEdit } from "lucide-react";
 
 export default function LandingHero() {
   return (
@@ -10,12 +10,13 @@ export default function LandingHero() {
             Free forever. No credit card.
           </p>
           <h1 className="mt-6 font-display text-4xl font-extrabold leading-[1.05] tracking-[-0.02em] text-ink sm:text-5xl md:text-6xl">
-            The CV builder that does not lie
+            Build a CV. Write anything else.
           </h1>
           <p className="mt-6 text-lg leading-8 text-stone-600 md:text-xl md:leading-9">
-            Build a CV from scratch, modernize one you already have, or tailor
-            it to a specific job. Whatever path you take, every word stays
-            grounded in your real experience. Nothing is fabricated.
+            myDoc is a CV builder and a writing editor in one workspace. Build
+            a resume from scratch, modernize an old one, tailor it to a job 
+            or open a blank page and write a project brief, report, or meeting
+            notes. Every word stays grounded in your real experience.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -26,12 +27,13 @@ export default function LandingHero() {
               Try it free
               <ArrowRight className="h-4 w-4" strokeWidth={2} />
             </Link>
-            <a
-              href="#how-it-works"
+            <Link
+              href="/dashboard/write"
               className="inline-flex items-center gap-2 border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:border-stone-900 hover:text-ink"
             >
-              See how it works
-            </a>
+              <FileEdit className="h-4 w-4" strokeWidth={2} />
+              Start writing
+            </Link>
           </div>
 
           <p className="mt-6 text-xs text-stone-500">
@@ -60,7 +62,7 @@ export default function LandingHero() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-3 md:mt-10">
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 md:mt-10 lg:grid-cols-4">
           <div className="border border-stone-200 bg-white p-4 text-center">
             <p className="text-xs font-bold uppercase tracking-wider text-rust">
               Start from scratch
@@ -83,6 +85,14 @@ export default function LandingHero() {
             </p>
             <p className="mt-1.5 text-sm text-stone-600">
               Paste a job description, get a version matched to it.
+            </p>
+          </div>
+          <div className="border border-stone-200 bg-white p-4 text-center">
+            <p className="text-xs font-bold uppercase tracking-wider text-rust">
+              Write documents
+            </p>
+            <p className="mt-1.5 text-sm text-stone-600">
+              Project briefs, reports, meeting notes or a blank page.
             </p>
           </div>
         </div>

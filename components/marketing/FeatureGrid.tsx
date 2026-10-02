@@ -4,6 +4,10 @@ const FEATURES = [
     body: "Upload any PDF or Word CV. We extract and structure it automatically.",
   },
   {
+    title: "Write documents, not just CVs",
+    body: "Project briefs, reports, meeting notes, and anything else. A proper writing editor built in.",
+  },
+  {
     title: "Tailor to any job",
     body: "Paste a job description, get a tailored version in 60 seconds.",
   },
@@ -16,9 +20,13 @@ const FEATURES = [
     body: "Density adjusts automatically. A warning if it cannot fit.",
   },
   {
-  title: "Six templates",
-  body: "Folio, Ledger, Slab, Compact, Editorial, and Modern. Recruiter-tested layouts.",
-},
+    title: "CV templates",
+    body: "Recruiter-tested layouts for every kind of application. More coming.",
+  },
+  {
+    title: "Document templates",
+    body: "Blank, briefs, reports, meeting notes  with new ones added regularly.",
+  },
   {
     title: "Live editor",
     body: "Real-time A4 preview as you type. Every change saves automatically.",
@@ -30,6 +38,10 @@ const FEATURES = [
   {
     title: "Match scoring",
     body: "See exactly how well your CV matches a job, with matched and missing keywords.",
+  },
+  {
+    title: "Rich-text writing",
+    body: "Headings, lists, links, quotes, code, alignment  everything you need, without the clutter.",
   },
   {
     title: "Never invents",
@@ -60,6 +72,10 @@ export default function FeatureGrid() {
           <h2 className="mt-4 font-display text-3xl font-extrabold leading-[1.15] tracking-[-0.02em] text-ink md:text-4xl">
             Every feature, no marketing fluff
           </h2>
+          <p className="mt-4 text-base leading-7 text-stone-600">
+            myDoc handles both jobs: a CV builder for applications, and a
+            writing editor for everything else.
+          </p>
         </div>
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

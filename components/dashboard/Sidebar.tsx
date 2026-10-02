@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { FileText, type LucideIcon } from "lucide-react";
+import { FileText, PenLine, type LucideIcon } from "lucide-react";
 
-type SidebarSection = "documents" | "settings";
+type SidebarSection = "documents" | "write" | "settings";
 
 export default function Sidebar({ active }: { active: SidebarSection }) {
   return (
@@ -21,6 +21,12 @@ export default function Sidebar({ active }: { active: SidebarSection }) {
           icon={FileText}
           label="My Documents"
           active={active === "documents"}
+        />
+        <SidebarLink
+          href="/dashboard/write"
+          icon={PenLine}
+          label="Write"
+          active={active === "write"}
         />
       </nav>
     </aside>

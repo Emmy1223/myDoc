@@ -4,7 +4,7 @@ import { randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
 export type DocumentStatus = "draft" | "in-progress" | "completed";
-export type DocumentKind = "CV" | "Cover Letter" | "Proposal";
+export type DocumentKind = "CV" | "Cover Letter" | "Proposal" | "Document";
 export type ActivityType = "created" | "duplicated" | "exported" | "deleted";
 
 export type UserRecord = {
@@ -18,7 +18,7 @@ export type UserRecord = {
 export type TemplateRecord = {
   id: string;
   name: string;
-  category: DocumentKind | "CVs" | "Cover Letters" | "Proposals";
+  category: DocumentKind | "CVs" | "Cover Letters" | "Proposals" | "Documents";
   description: string;
 };
 
@@ -68,6 +68,10 @@ const availableTemplates: TemplateRecord[] = [
   { id: "slab", name: "Slab", category: "CVs", description: "A spacious CV with strong hierarchy and clear sections." },
   { id: "correspondence", name: "Correspondence", category: "Cover Letters", description: "A direct, well-spaced layout for cover letters." },
   { id: "brief", name: "Brief", category: "Proposals", description: "A compact proposal layout for client-ready documents." },
+  { id: "blank",         name: "Blank",         category: "Documents", description: "Start from an empty page." },
+  { id: "project-brief", name: "Project Brief", category: "Documents", description: "Goals, scope, and deliverables." },
+  { id: "report",        name: "Report",        category: "Documents", description: "Structured findings with sections." },
+  { id: "meeting-notes", name: "Meeting Notes", category: "Documents", description: "Agenda, notes, and action items." },
 ];
 
 // ============================================================

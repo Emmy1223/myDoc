@@ -5,6 +5,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   FileText,
+  PenLine,
   Settings,
   Sparkles,
   HelpCircle,
@@ -63,6 +64,7 @@ function SidebarContent({
 }) {
   const isDashboard = pathname === "/dashboard";
   const isTailor = pathname.startsWith("/dashboard/tailor");
+  const isWrite = pathname.startsWith("/dashboard/write");
   const isSettings = pathname.startsWith("/settings");
 
   return (
@@ -106,6 +108,14 @@ function SidebarContent({
             <HelpCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
           </button>
         </div>
+
+        <SidebarLink
+          href="/dashboard/write"
+          icon={PenLine}
+          label="Write"
+          active={isWrite}
+          onClick={onNavigate}
+        />
 
         <SidebarLink
           href="/settings"

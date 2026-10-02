@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Upload, FileUp } from "lucide-react";
+import { Upload, FileUp, FileEdit } from "lucide-react";
 
-/** A purely CSS/HTML wireframe of the split-screen builder — no images. */
 function BuilderMock() {
   return (
     <div className="border border-stone-300 bg-white">
@@ -100,14 +99,15 @@ export default function Hero() {
       <div className="mx-auto max-w-6xl px-6 pb-20 pt-20 md:pb-28 md:pt-28">
         <div className="mx-auto max-w-3xl text-center">
           <p className="mb-6 text-xs font-semibold uppercase tracking-[0.2em] text-rust">
-            CV Builder
+            CV Builder & Document Editor
           </p>
           <h1 className="font-display text-5xl font-extrabold leading-[1.1] tracking-tightish text-ink md:text-6xl">
-            Format your CV without the frustration.
+            Create a CV. Or write anything else.
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg leading-7 text-stone-600">
-            Upload your old resume and let our system map your history into a
-            clean, professional layout instantly.
+            Upload your old resume and let our system map it into a clean
+            layout or open a blank page and write a project brief, report,
+            or meeting notes. One workspace, both jobs.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
@@ -118,18 +118,28 @@ export default function Hero() {
               Upload existing CV
             </Link>
             <Link
-              href="/builder"
+              href="/dashboard/write"
               className="inline-flex items-center gap-2 border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-ink hover:border-ink"
             >
-              Start from scratch
+              <FileEdit className="h-4 w-4" strokeWidth={2} />
+              Start writing
             </Link>
           </div>
+          <p className="mt-6 text-xs text-stone-500">
+            Or{" "}
+            <Link
+              href="/builder"
+              className="font-semibold text-rust hover:underline"
+            >
+              start a CV from scratch
+            </Link>
+          </p>
         </div>
 
         <div className="mx-auto mt-16 max-w-4xl">
           <BuilderMock />
           <p className="mt-4 text-center text-xs uppercase tracking-[0.18em] text-stone-500">
-            The editor — content on the left, live preview on the right
+            The CV editor - content on the left, live preview on the right
           </p>
         </div>
       </div>

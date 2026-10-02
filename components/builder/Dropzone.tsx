@@ -72,9 +72,6 @@ export default function Dropzone({
 
             console.log("Raw extracted text:", extractedText.substring(0, 1000));
 
-      // ============================================================
-      // AI PARSING (primary) → regex fallback
-      // ============================================================
       let structuredData: any = null;
 
       try {

@@ -6,7 +6,7 @@ import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "myDoc — Format your CV without the frustration",
+  title: "myDoc - Format your CV without the frustration",
   description:
     "Upload your old resume and let myDoc map your history into a clean, professional layout instantly.",
 };

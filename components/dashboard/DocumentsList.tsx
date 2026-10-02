@@ -15,7 +15,10 @@ import {
 import DocumentThumbnail from "./DocumentThumbnail";
 import DocumentRowMenu, { type RowAction } from "./DocumentRowMenu";
 import DocumentPreviewModal from "./DocumentPreviewModal";
+import NewDocumentChooser from "./NewDocumentChooser";
+import DocumentTemplateChooser from "./DocumentTemplateChooser";
 import OnboardingChat from "@/components/builder/OnboardingChat";
+import { getDocTemplate, type DocTemplateId } from "@/lib/doc-data";
 
 type DocumentItem = {
   id: string;
@@ -30,6 +33,14 @@ type DocumentItem = {
 };
 
 type Notice = { tone: "error" | "success"; message: string } | null;
+
+function builderPathFor(doc: { id: string; kind: string }, extra?: string) {
+  const base =
+    doc.kind === "Document"
+      ? `/dashboard/write?doc=${encodeURIComponent(doc.id)}`
+      : `/builder?document=${encodeURIComponent(doc.id)}`;
+  return extra ? `${base}&${extra}` : base;
+}
 
 export default function DocumentsList({
   userName,
@@ -54,6 +65,13 @@ export default function DocumentsList({
   const [notice, setNotice] = useState<Notice>(null);
   const [previewDoc, setPreviewDoc] = useState<DocumentItem | null>(null);
   const uploadInput = useRef<HTMLInputElement>(null);
+
+  // New modal states
+  const [chooserOpen, setChooserOpen] = useState(false);
+  const [templateChooserOpen, setTemplateChooserOpen] = useState(false);
+  const [creatingDoc, setCreatingDoc] = useState(false);
+
+  // Existing AI onboarding modal — now opened from the chooser's CV path
   const [onboardingOpen, setOnboardingOpen] = useState(false);
 
   useEffect(() => {
@@ -102,48 +120,104 @@ export default function DocumentsList({
     }
   };
 
-const handleCreateBlank = () => {
-  setOnboardingOpen(true);
-};
+  /* ---------------- New-document flow ---------------- */
 
-const handleCreateBlankSkipped = () => {
-  setOnboardingOpen(false);
-  void createBlankDocument();
-};
+  // 1. Open the CV-vs-Document chooser
+  const handleCreateBlank = () => {
+    setChooserOpen(true);
+  };
 
-const createBlankDocument = async (cvData?: any) => {
-  setWorkingId("create");
-  try {
-    const res = await fetch("/api/documents", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        action: "create",
-        title: cvData?.title ? `${cvData.title} CV` : "Untitled document",
-        kind: "CV",
-        status: cvData ? "in-progress" : "draft",
-        content: cvData ?? undefined,
-      }),
-    });
-    const result = (await res.json()) as {
-      document?: DocumentItem;
-      error?: string;
-    };
-    if (!res.ok || !result.document) {
-      throw new Error(result.error ?? "Could not create the document.");
+  // 2. User picked CV → open the AI onboarding modal
+  const handlePickCv = () => {
+    setChooserOpen(false);
+    setOnboardingOpen(true);
+  };
+
+  // 3. User picked Document → open the template chooser
+  const handlePickDocument = () => {
+    setChooserOpen(false);
+    setTemplateChooserOpen(true);
+  };
+
+  // 4. User picked a template → create the doc and route to the Write page
+  const handlePickTemplate = async (templateId: DocTemplateId) => {
+    setCreatingDoc(true);
+    try {
+      const tpl = getDocTemplate(templateId);
+      const body = tpl.build();
+      const res = await fetch("/api/documents", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "create",
+          title: tpl.name,
+          kind: "Document",
+          templateId: tpl.id,
+          status: "draft",
+          content: { schemaVersion: 1, doc: body },
+        }),
+      });
+      const result = (await res.json()) as {
+        document?: DocumentItem;
+        error?: string;
+      };
+      if (!res.ok || !result.document) {
+        throw new Error(result.error ?? "Could not create the document.");
+      }
+      router.push(
+        `/dashboard/write?doc=${encodeURIComponent(result.document.id)}`,
+      );
+    } catch (err) {
+      setNotice({
+        tone: "error",
+        message:
+          err instanceof Error ? err.message : "Could not create the document.",
+      });
+      setTemplateChooserOpen(false);
+    } finally {
+      setCreatingDoc(false);
     }
-    router.push(`/builder?document=${encodeURIComponent(result.document.id)}`);
-  } catch (err) {
-    setNotice({
-      tone: "error",
-      message:
-        err instanceof Error ? err.message : "Could not create the document.",
-    });
-  } finally {
-    setWorkingId(null);
+  };
+
+  // Existing "skip the AI chat" path — creates a blank CV
+  const handleCreateBlankSkipped = () => {
     setOnboardingOpen(false);
-  }
-};
+    void createBlankDocument();
+  };
+
+  const createBlankDocument = async (cvData?: any) => {
+    setWorkingId("create");
+    try {
+      const res = await fetch("/api/documents", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "create",
+          title: cvData?.title ? `${cvData.title} CV` : "Untitled document",
+          kind: "CV",
+          status: cvData ? "in-progress" : "draft",
+          content: cvData ?? undefined,
+        }),
+      });
+      const result = (await res.json()) as {
+        document?: DocumentItem;
+        error?: string;
+      };
+      if (!res.ok || !result.document) {
+        throw new Error(result.error ?? "Could not create the document.");
+      }
+      router.push(`/builder?document=${encodeURIComponent(result.document.id)}`);
+    } catch (err) {
+      setNotice({
+        tone: "error",
+        message:
+          err instanceof Error ? err.message : "Could not create the document.",
+      });
+    } finally {
+      setWorkingId(null);
+      setOnboardingOpen(false);
+    }
+  };
 
   const handleRenameStart = (doc: DocumentItem) => {
     setOpenMenuId(null);
@@ -193,7 +267,7 @@ const createBlankDocument = async (cvData?: any) => {
   const handleRowAction = async (doc: DocumentItem, action: RowAction) => {
     if (action === "edit") {
       setOpenMenuId(null);
-      router.push(`/builder?document=${encodeURIComponent(doc.id)}`);
+      router.push(builderPathFor(doc));
       return;
     }
 
@@ -204,16 +278,13 @@ const createBlankDocument = async (cvData?: any) => {
 
     if (action === "download") {
       setOpenMenuId(null);
-      window.open(
-        `/builder?document=${encodeURIComponent(doc.id)}&print=1`,
-        "_blank",
-      );
+      window.open(builderPathFor(doc, "print=1"), "_blank");
       return;
     }
 
     if (action === "open") {
       setOpenMenuId(null);
-      window.open(`/builder?document=${encodeURIComponent(doc.id)}`, "_blank");
+      window.open(builderPathFor(doc), "_blank");
       return;
     }
 
@@ -222,9 +293,7 @@ const createBlankDocument = async (cvData?: any) => {
       setWorkingId(doc.id);
       setWorkingAction("export-json");
       try {
-        const res = await fetch(
-          `/api/documents/${encodeURIComponent(doc.id)}`,
-        );
+        const res = await fetch(`/api/documents/${encodeURIComponent(doc.id)}`);
         if (!res.ok) throw new Error("Could not fetch the document.");
         const result = (await res.json()) as {
           document?: { content?: Record<string, unknown> | null };
@@ -357,7 +426,7 @@ const createBlankDocument = async (cvData?: any) => {
           className="inline-flex items-center gap-2 bg-rust px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rust-dark disabled:cursor-wait disabled:opacity-70 print-hidden"
         >
           <Plus className="h-4 w-4" strokeWidth={2.25} />
-          Create New Document
+          New Document
         </button>
       </div>
 
@@ -427,9 +496,12 @@ const createBlankDocument = async (cvData?: any) => {
                       className="min-w-0 flex-1 border border-rust bg-white px-2 py-1 font-display text-base font-bold tracking-tightish text-ink outline-none"
                     />
                   ) : (
-                    <p className="truncate font-display text-base font-bold tracking-tightish text-ink">
+                    <Link
+                      href={builderPathFor(doc)}
+                      className="block truncate font-display text-base font-bold tracking-tightish text-ink hover:text-rust"
+                    >
                       {doc.title}
-                    </p>
+                    </Link>
                   )}
                   <p className="mt-0.5 flex items-center gap-1.5 text-xs text-stone-500">
                     <Clock className="h-3 w-3" strokeWidth={2} />
@@ -491,7 +563,7 @@ const createBlankDocument = async (cvData?: any) => {
         </div>
       )}
 
-            <DocumentPreviewModal
+      <DocumentPreviewModal
         open={previewDoc !== null}
         documentId={previewDoc?.id ?? null}
         title={previewDoc?.title ?? ""}
@@ -499,6 +571,23 @@ const createBlankDocument = async (cvData?: any) => {
         onClose={() => setPreviewDoc(null)}
       />
 
+      {/* New: CV-vs-Document chooser */}
+      <NewDocumentChooser
+        open={chooserOpen}
+        onClose={() => setChooserOpen(false)}
+        onPickCv={handlePickCv}
+        onPickDocument={handlePickDocument}
+      />
+
+      {/* New: template chooser for documents */}
+      <DocumentTemplateChooser
+        open={templateChooserOpen}
+        onClose={() => setTemplateChooserOpen(false)}
+        onPick={handlePickTemplate}
+        creating={creatingDoc}
+      />
+
+      {/* Existing: AI onboarding modal for the CV flow */}
       <OnboardingChat
         open={onboardingOpen}
         onClose={() => setOnboardingOpen(false)}
@@ -543,9 +632,8 @@ function EmptyState({
         Hello, {firstName}.
       </h2>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-        You do not have any CVs yet. Upload an existing one and we will
-        populate the fields for you, or start from a blank page and fill it in
-        manually.
+        You do not have any documents yet. Create a CV or a rich document to
+        get started.
       </p>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -591,7 +679,7 @@ function EmptyState({
           </span>
           <span className="flex w-full items-center justify-between gap-3">
             <span className="font-display text-base font-bold tracking-tightish text-ink">
-              Start from blank
+              Start from scratch
             </span>
             <ArrowRight
               className="h-4 w-4 text-stone-400 transition-transform group-hover:translate-x-0.5 group-hover:text-rust"
@@ -599,7 +687,7 @@ function EmptyState({
             />
           </span>
           <span className="text-xs leading-5 text-stone-500">
-            Begin with an empty document and add each section manually.
+            Choose a CV or a rich document and start from a blank page.
           </span>
         </button>
       </div>

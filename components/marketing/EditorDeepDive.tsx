@@ -1,8 +1,8 @@
 const FEATURES = [
   {
-  title: "Six professional templates",
-  body: "Folio, Ledger, Slab, Compact, Editorial, and Modern. Recruiter-tested layouts that work in every ATS.",
-},
+    title: "Live A4 preview",
+    body: "See exactly how your CV will look on paper while you type.",
+  },
   {
     title: "Auto-fit to two pages",
     body: "If your CV runs long, we tighten spacing automatically. If it still does not fit, we tell you honestly and suggest trimming content, not shrinking fonts below readable sizes.",
@@ -12,8 +12,24 @@ const FEATURES = [
     body: "Choose dot, dash, or no bullets. Adjust line spacing. The preview updates instantly.",
   },
   {
-    title: "Live A4 preview",
-    body: "See exactly how your CV will look on paper while you type.",
+    title: "Rich-text writing",
+    body: "Headings, bold, italics, underline, lists, quotes, code, links, and alignment. Everything you expect from a real writing editor.",
+  },
+  {
+    title: "CV templates",
+    body: "Recruiter-tested layouts built for ATS parsers and human reviewers alike. Switch layouts with one click  your content stays exactly where it is.",
+  },
+  {
+    title: "Document templates",
+    body: "Blank pages, project briefs, reports, meeting notes, and more. Each template gives you a strong structure you can edit freely.",
+  },
+  {
+    title: "Autosave everywhere",
+    body: "Every keystroke is saved to the cloud. Close the tab, switch devices, come back later  your work is exactly where you left it.",
+  },
+  {
+    title: "Optional sections",
+    body: "Add languages, projects, certifications, awards, and anything else. Your CV grows with your career, not against it.",
   },
 ];
 
@@ -26,12 +42,12 @@ export default function EditorDeepDive() {
             The Editor
           </p>
           <h2 className="mt-4 font-display text-3xl font-extrabold leading-[1.15] tracking-[-0.02em] text-ink md:text-4xl">
-            A live editor that does not get in your way
+            One editor. Two jobs.
           </h2>
           <p className="mt-6 text-base leading-8 text-stone-700 md:text-lg md:leading-9">
-            Edit any section. Add optional sections like languages, projects,
-            and certifications. Everything autosaves to your account. Nothing
-            you do is ever lost.
+            Build a CV with the structured editor  or open a document and
+            write freely, like you would in Word. Both live in the same
+            workspace, both autosave, and both export to a clean PDF.
           </p>
         </div>
 
