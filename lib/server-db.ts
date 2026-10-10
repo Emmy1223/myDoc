@@ -139,10 +139,45 @@ function ensureSchema(): Promise<void> {
 
   return schemaReady;
 }
+await sql`
+  CREATE TABLE IF NOT EXISTS push_subscriptions (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    endpoint TEXT NOT NULL UNIQUE,
+    auth TEXT NOT NULL,
+    p256dh TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )
+`;
+export async function savePushSubscription({
+  userId,
+  endpoint,
+  auth,
+  p256dh,
+}: {
+  userId: string;
+  endpoint: string;
+  auth: string;
+  p256dh: string;
+}) {
+  await ensureSchema();
+  const id = `push_${randomUUID()}`;
+  await sql`
+    INSERT INTO push_subscriptions (id, user_id, endpoint, auth, p256dh, created_at)
+    VALUES (${id}, ${userId}, ${endpoint}, ${auth}, ${p256dh}, NOW())
+    ON CONFLICT (endpoint) DO UPDATE SET
+      user_id = ${userId},
+      auth = ${auth},
+      p256dh = ${p256dh}
+  `;
+}
 
-// ============================================================
-// HELPERS
-// ============================================================
+export async function getAllPushSubscriptions() {
+  await ensureSchema();
+  return (await sql`
+    SELECT id, user_id, endpoint, auth, p256dh FROM push_subscriptions
+  `) as any[];
+}
 
 function now() {
   return new Date().toISOString();

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import PushNotificationToggle from "@/components/dashboard/PushNotificationToggle";
 import {
   Check,
   RotateCcw,
@@ -230,7 +231,22 @@ export default function SettingsClient() {
           />
         </div>
       </section>
-
+      <section className="border border-stone-200 bg-white">
+        <div className="border-b border-stone-200 px-6 py-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rust">
+            Notifications
+          </p>
+          <h2 className="mt-1 font-display text-xl font-bold tracking-tightish text-ink">
+            Push notifications
+          </h2>
+          <p className="mt-1 max-w-xl text-sm leading-6 text-stone-600">
+            Choose whether myDoc can send you updates and reminders on this device.
+          </p>
+        </div>
+        <div className="px-6">
+          <PushNotificationToggle />
+        </div>
+      </section>
       <section className="border border-stone-200 bg-stone-100 px-6 py-5">
         <div className="flex items-start gap-3">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-rust" strokeWidth={1.75} />

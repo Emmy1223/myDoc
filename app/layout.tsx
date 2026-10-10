@@ -3,6 +3,7 @@ import { SessionProvider } from "next-auth/react";
 import { Analytics } from "@vercel/analytics/next";
 import "@fontsource-variable/geist";
 import "@fontsource-variable/plus-jakarta-sans";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -37,6 +38,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-paper font-sans text-ink antialiased">
         <SessionProvider>{children}</SessionProvider>
         <Analytics />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

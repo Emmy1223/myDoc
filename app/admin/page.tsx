@@ -19,7 +19,15 @@ export default async function AdminPage() {
 
   return (
     <main className="min-h-screen bg-[#1c1c1e] p-8 text-white">
-      <h1 className="text-2xl font-bold">Admin</h1>
+            <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Admin</h1>
+        <a
+          href="/admin/notifications"
+          className="bg-rust px-4 py-2 text-sm font-semibold text-white hover:bg-rust-dark"
+        >
+          Send notification →
+        </a>
+      </div>
       <p className="mt-1 text-sm text-stone-400">
         {users.length} registered · {docs.length} documents
       </p>
