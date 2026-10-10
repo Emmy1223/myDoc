@@ -19,6 +19,7 @@ import NewDocumentChooser from "./NewDocumentChooser";
 import DocumentTemplateChooser from "./DocumentTemplateChooser";
 import OnboardingChat from "@/components/builder/OnboardingChat";
 import { getDocTemplate, type DocTemplateId } from "@/lib/doc-data";
+import PushOptInModal from "@/components/dashboard/PushOptInModal";
 
 type DocumentItem = {
   id: string;
@@ -570,6 +571,7 @@ export default function DocumentsList({
         templateId={previewDoc?.templateId ?? "folio"}
         onClose={() => setPreviewDoc(null)}
       />
+   <PushOptInModal />      
 
       {/* New: CV-vs-Document chooser */}
       <NewDocumentChooser
