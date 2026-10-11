@@ -59,6 +59,11 @@ export default async function ConvertPage() {
               layouts may not convert perfectly yet. We&apos;re actively
               improving this tool.
             </p>
+            <p className="mt-3 border-l-2 border-amber-400 bg-amber-50/60 px-3 py-2 text-xs leading-5 text-stone-700">
+              <strong className="font-semibold text-ink">iOS:</strong> Some
+              iPhone and iPad users are seeing errors during conversion. This
+              is a known issue and we are working on a fix.
+            </p>
 
             <div className="mt-8">
               <PdfToWordClient />
