@@ -1,8 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "next-auth/react";
 import { Analytics } from "@vercel/analytics/next";
-import "@fontsource-variable/geist";
-import "@fontsource-variable/plus-jakarta-sans";
+import "@fontsource/geist/400.css";
+import "@fontsource/geist/500.css";
+import "@fontsource/geist/700.css";
+import "@fontsource/geist/800.css";
+
+import "@fontsource/plus-jakarta-sans/400.css";
+import "@fontsource/plus-jakarta-sans/500.css";
+import "@fontsource/plus-jakarta-sans/700.css";
+import "@fontsource/plus-jakarta-sans/800.css";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 

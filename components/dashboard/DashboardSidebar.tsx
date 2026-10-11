@@ -7,6 +7,7 @@ import {
   FileText,
   PenLine,
   Settings,
+  FileOutput,
   Sparkles,
   HelpCircle,
   Menu,
@@ -21,6 +22,7 @@ type SidebarLinkProps = {
   label: string;
   active?: boolean;
   onClick?: () => void;
+  badge?: string;
 };
 
 function SidebarLink({
@@ -30,6 +32,7 @@ function SidebarLink({
   active,
   onClick,
   variant = "dark",
+  badge,
 }: SidebarLinkProps & { variant?: "dark" | "light" }) {
   const isLight = variant === "light";
   return (
@@ -45,8 +48,21 @@ function SidebarLink({
             : "border-transparent text-stone-300 hover:border-stone-700 hover:bg-stone-800 hover:text-white"
       }`}
     >
-      <Icon className="h-4 w-4" strokeWidth={1.75} />
-      {label}
+      <Icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+      <span className="flex-1">{label}</span>
+      {badge && (
+        <sup
+          className={`shrink-0 text-[9px] font-semibold tracking-wide ${
+            active
+              ? "text-white/80"
+              : isLight
+                ? "text-rust/80"
+                : "text-orange-400/80"
+          }`}
+        >
+          {badge}
+        </sup>
+      )}
     </Link>
   );
 }
@@ -72,6 +88,7 @@ function SidebarContent({
   const isDashboard = pathname === "/dashboard";
   const isTailor = pathname.startsWith("/dashboard/tailor");
   const isWrite = pathname.startsWith("/dashboard/write");
+  const isConvert = pathname.startsWith("/dashboard/convert");
   const isSettings = pathname.startsWith("/settings");
 
   return (
@@ -135,6 +152,16 @@ function SidebarContent({
           active={isWrite}
           onClick={onNavigate}
           variant={variant}
+        />
+
+        <SidebarLink
+          href="/dashboard/convert"
+          icon={FileOutput}
+          label="PDF to Word"
+          active={isConvert}
+          onClick={onNavigate}
+          variant={variant}
+          badge="Beta"
         />
 
         <SidebarLink
