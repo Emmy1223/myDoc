@@ -61,7 +61,6 @@ function ContactItems({ cv, dark = false }: { cv: CVData; dark?: boolean }) {
     icon: typeof Mail;
     value: string;
     href?: string;
-    label?: string;
   }[] = [
     { icon: Mail, value: cv.email },
     { icon: Phone, value: cv.phone },
@@ -70,7 +69,6 @@ function ContactItems({ cv, dark = false }: { cv: CVData; dark?: boolean }) {
       icon: Globe,
       value: cv.website,
       href: normalizeUrl(cv.website),
-      label: "Portfolio",
     },
   ].filter((i) => i.value.trim().length > 0);
 
@@ -100,7 +98,7 @@ function ContactItems({ cv, dark = false }: { cv: CVData; dark?: boolean }) {
                 rel="noopener noreferrer"
                 className={dark ? "text-gray-200" : "text-black"}
               >
-                {item.label ?? item.value}
+                {item.value}
               </a>
             ) : (
               <span className={dark ? "text-gray-200" : "text-black"}>

@@ -1,8 +1,3 @@
-// lib/doc-data.ts
-// Rich-text document model for the Word-like editor.
-// Stored in `documents.content` (JSONB) when `documents.kind === "Document"`.
-// Uses Tiptap / ProseMirror JSON - a tree of block nodes.
-
 export type RichDocNode = {
   type: string;
   attrs?: Record<string, unknown>;
@@ -12,13 +7,10 @@ export type RichDocNode = {
 };
 
 export type RichDocContent = {
-  /** Tiptap JSON - the actual document body. */
   doc: RichDocNode;
-  /** Bumped when the shape of `doc` changes so we can migrate later. */
   schemaVersion: 1;
 };
 
-/** A blank Tiptap document - a single empty paragraph. */
 export function emptyDocBody(): RichDocNode {
   return {
     type: "doc",
@@ -26,12 +18,10 @@ export function emptyDocBody(): RichDocNode {
   };
 }
 
-/** A blank rich-doc content payload. */
 export function emptyDocContent(): RichDocContent {
   return { doc: emptyDocBody(), schemaVersion: 1 };
 }
 
-/** Type guard: is this JSONB payload one of our rich docs? */
 export function isRichDocContent(value: unknown): value is RichDocContent {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
@@ -43,21 +33,17 @@ export function isRichDocContent(value: unknown): value is RichDocContent {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Starter templates                                                   */
-/* ------------------------------------------------------------------ */
-
 export type DocTemplateId =
   | "blank"
   | "project-brief"
   | "report"
-  | "meeting-notes";
+  | "meeting-notes"
+  | "invoice";
 
 export type DocTemplate = {
   id: DocTemplateId;
   name: string;
   description: string;
-  /** Tiptap JSON body for a new document using this template. */
   build: () => RichDocNode;
 };
 
@@ -69,7 +55,13 @@ function heading(level: 1 | 2 | 3, text: string): RichDocNode {
   };
 }
 
-/** An empty paragraph with a ghost placeholder hint. */
+function paragraph(text: string): RichDocNode {
+  return {
+    type: "paragraph",
+    content: [{ type: "text", text }],
+  };
+}
+
 function ghostParagraph(hint: string): RichDocNode {
   return {
     type: "paragraph",
@@ -77,7 +69,6 @@ function ghostParagraph(hint: string): RichDocNode {
   };
 }
 
-/** A bullet list where each item is a paragraph with a ghost placeholder. */
 function ghostBulletList(hints: string[]): RichDocNode {
   return {
     type: "bulletList",
@@ -86,6 +77,10 @@ function ghostBulletList(hints: string[]): RichDocNode {
       content: [ghostParagraph(hint)],
     })),
   };
+}
+
+function horizontalRule(): RichDocNode {
+  return { type: "horizontalRule" };
 }
 
 export const docTemplates: DocTemplate[] = [
@@ -163,6 +158,54 @@ export const docTemplates: DocTemplate[] = [
           "Owner, task, due date",
           "Owner, task, due date",
         ]),
+      ],
+    }),
+  },
+  {
+    id: "invoice",
+    name: "Invoice",
+    description: "Bill a client with line items, totals, and payment details.",
+    build: () => ({
+      type: "doc",
+      content: [
+        heading(1, "Invoice"),
+
+        heading(2, "From"),
+        ghostParagraph("Your name, company, and address"),
+
+        heading(2, "Billing to"),
+        ghostParagraph("Client name and address"),
+
+        heading(2, "Invoice details"),
+        ghostBulletList([
+          "Invoice number: INV-001",
+          "Date issued: 11 October 2026",
+          "Due date: 25 October 2026",
+        ]),
+
+        horizontalRule(),
+
+        heading(2, "Line items"),
+        ghostBulletList([
+          "Service or product - $0.00",
+          "Service or product - $0.00",
+          "Service or product - $0.00",
+        ]),
+
+        horizontalRule(),
+
+        heading(2, "Totals"),
+        paragraph("Subtotal: $0.00"),
+        paragraph("Tax (0%): $0.00"),
+        paragraph("Total: $0.00"),
+
+        horizontalRule(),
+
+        heading(2, "Payment details"),
+        ghostParagraph("Bank name, account number, or payment link"),
+
+        heading(2, "Notes"),
+        ghostParagraph("Thank you for your business"),
       ],
     }),
   },

@@ -525,7 +525,7 @@ export async function createDocument({
   await ensureSchema();
   const timestamp = now();
   const documentId = id("document");
-  const cleanTitle = title.trim() || "Untitled document";
+  const cleanTitle = title.trim()|| "Untitled CV"; 
 
   await sql`
     INSERT INTO documents (

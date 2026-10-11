@@ -194,7 +194,7 @@ export default function DocumentsList({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           action: "create",
-          title: cvData?.title ? `${cvData.title} CV` : "Untitled document",
+          title: cvData?.fullName?.trim() || cvData?.title || "Untitled CV",
           kind: "CV",
           status: cvData ? "in-progress" : "draft",
           content: cvData ?? undefined,
@@ -506,7 +506,12 @@ export default function DocumentsList({
                   )}
                   <p className="mt-0.5 flex items-center gap-1.5 text-xs text-stone-500">
                     <Clock className="h-3 w-3" strokeWidth={2} />
-                    Updated {new Date(doc.updatedAt).toLocaleDateString()}
+                    Updated{" "}
+{new Date(doc.updatedAt).toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+})}
                     <span className="text-stone-300">/</span>
                     <span>{doc.templateName} template</span>
                   </p>
