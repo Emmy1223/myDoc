@@ -20,6 +20,7 @@ import TemplatesTab from "./TemplatesTab";
 import SettingsTab from "./SettingsTab";
 import CvPage from "./CvPage";
 import MeasureCv from "./MeasureCv";
+import NameDocumentModal from "./NameDocumentModal";
 import type { BulletStyle, BulletSpacing } from "./fields";
 
 type Tab = "content" | "templates" | "settings";
@@ -99,6 +100,9 @@ export default function BuilderClient({
   const [bulletStyle, setBulletStyle] = useState<BulletStyle>("dot");
   const [bulletSpacing, setBulletSpacing] = useState<BulletSpacing>("compact");
 
+  // Modal state for naming the doc before download
+  const [nameModalOpen, setNameModalOpen] = useState(false);
+
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -145,7 +149,9 @@ export default function BuilderClient({
         if (settings.template) setTemplate(settings.template);
         if (settings.pageSize) setPageSize(settings.pageSize);
         if (settings.density) setDensity(settings.density);
-        if (settings.docName) setDocName(settings.docName);
+        if (settings.docName && !/^untitled/i.test(settings.docName)) {
+          setDocName(settings.docName);
+        }
         if (settings.bulletStyle) setBulletStyle(settings.bulletStyle);
         if (settings.bulletSpacing) setBulletSpacing(settings.bulletSpacing);
         if (typeof settings.autoFit === "boolean") setAutoFit(settings.autoFit);
@@ -194,7 +200,15 @@ export default function BuilderClient({
         };
 
         setCv(loadedCv);
-        if (doc.title) setDocName(doc.title);
+        const title = doc.title?.trim() ?? "";
+        const looksUnnamed =
+          !title || /^untitled/i.test(title) || /^imported/i.test(title);
+
+        if (looksUnnamed) {
+          setDocName("");
+        } else {
+          setDocName(title);
+        }
           if (
           doc.templateId === "folio" ||
           doc.templateId === "ledger" ||
@@ -226,9 +240,9 @@ export default function BuilderClient({
         await fetch(`/api/documents/${encodeURIComponent(documentId)}`, {
           method: "PUT",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({
+            body: JSON.stringify({
             content: cv,
-            title: docName || "Untitled document",
+            title: docName.trim() || null,
             templateId: template,
           }),
         });
@@ -356,9 +370,47 @@ export default function BuilderClient({
     [],
   );
 
+  const isDefaultName = (name: string) => {
+    const trimmed = (name || "").trim();
+    if (!trimmed) return true;
+    if (/^untitled/i.test(trimmed)) return true;
+    if (/^imported/i.test(trimmed)) return true;
+    return false;
+  };
+
+  const suggestName = (): string => {
+    if (cv.fullName?.trim()) return cv.fullName.trim();
+    if (cv.title?.trim()) return `${cv.title.trim()} CV`;
+    return "";
+  };
+
   const handleDownload = () => {
+    const handleDownload = () => {
+  console.log("DOWNLOAD CLICKED. docName:", JSON.stringify(docName));
+  console.log("isDefaultName?", isDefaultName(docName));
+  if (isDefaultName(docName)) {
+    setNameModalOpen(true);
+    return;
+  }
+  saveToLocalStorage(cv);
+  window.print();
+};
+    if (isDefaultName(docName)) {
+      setNameModalOpen(true);
+      return;
+    }
     saveToLocalStorage(cv);
     window.print();
+  };
+
+  const handleNameAndDownload = (name: string) => {
+    setDocName(name);
+    setNameModalOpen(false);
+    saveToLocalStorage(cv);
+    // Let React paint the new title before triggering the print dialog
+    window.setTimeout(() => {
+      window.print();
+    }, 100);
   };
 
   const handleManualSave = () => {
@@ -432,7 +484,6 @@ export default function BuilderClient({
             onChange={(e) => setDocName(e.target.value)}
             aria-label="Document name"
             className="w-full bg-transparent font-display text-base font-bold tracking-tightish text-ink placeholder:text-stone-400"
-            placeholder="Untitled document"
           />
         </div>
 
@@ -580,6 +631,13 @@ export default function BuilderClient({
           onMeasure={handleMeasure}
         />
       )}
+
+      <NameDocumentModal
+        open={nameModalOpen}
+        defaultName={suggestName()}
+        onCancel={() => setNameModalOpen(false)}
+        onConfirm={handleNameAndDownload}
+      />
     </div>
   );
 }
