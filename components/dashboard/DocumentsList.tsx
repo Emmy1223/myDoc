@@ -15,6 +15,7 @@ import {
 import DocumentThumbnail from "./DocumentThumbnail";
 import DocumentRowMenu, { type RowAction } from "./DocumentRowMenu";
 import DocumentPreviewModal from "./DocumentPreviewModal";
+import ShareDialog from "./ShareDialog";
 import NewDocumentChooser from "./NewDocumentChooser";
 import DocumentTemplateChooser from "./DocumentTemplateChooser";
 import OnboardingChat from "@/components/builder/OnboardingChat";
@@ -65,6 +66,7 @@ export default function DocumentsList({
   const [renameValue, setRenameValue] = useState("");
   const [notice, setNotice] = useState<Notice>(null);
   const [previewDoc, setPreviewDoc] = useState<DocumentItem | null>(null);
+  const [shareDoc, setShareDoc] = useState<DocumentItem | null>(null);
   const uploadInput = useRef<HTMLInputElement>(null);
 
   // New modal states
@@ -274,6 +276,12 @@ export default function DocumentsList({
 
     if (action === "rename") {
       handleRenameStart(doc);
+      return;
+    }
+
+    if (action === "share") {
+      setOpenMenuId(null);
+      setShareDoc(doc);
       return;
     }
 
@@ -575,6 +583,12 @@ export default function DocumentsList({
         title={previewDoc?.title ?? ""}
         templateId={previewDoc?.templateId ?? "folio"}
         onClose={() => setPreviewDoc(null)}
+      />
+      <ShareDialog
+        open={shareDoc !== null}
+        documentId={shareDoc?.id ?? null}
+        documentTitle={shareDoc?.title ?? ""}
+        onClose={() => setShareDoc(null)}
       />
    <PushOptInModal />      
 

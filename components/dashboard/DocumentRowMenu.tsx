@@ -6,6 +6,7 @@ import {
   Download,
   ExternalLink,
   FileJson,
+  Link2,
   LoaderCircle,
   Pencil,
   Trash2,
@@ -14,6 +15,7 @@ import {
 export type RowAction =
   | "edit"
   | "rename"
+  | "share"
   | "duplicate"
   | "download"
   | "open"
@@ -60,6 +62,7 @@ export default function DocumentRowMenu({
   }[] = [
     { action: "edit", label: "Edit in builder", icon: Pencil },
     { action: "rename", label: "Rename", icon: Pencil },
+    { action: "share", label: "Share", icon: Link2 },
     { action: "duplicate", label: "Duplicate", icon: Copy },
     { action: "download", label: "Download PDF", icon: Download },
     { action: "open", label: "Open in new tab", icon: ExternalLink },

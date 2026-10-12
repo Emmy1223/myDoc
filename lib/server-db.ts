@@ -74,10 +74,6 @@ const availableTemplates: TemplateRecord[] = [
   { id: "meeting-notes", name: "Meeting Notes", category: "Documents", description: "Agenda, notes, and action items." },
 ];
 
-// ============================================================
-// SCHEMA INITIALIZATION (runs once per serverless instance)
-// ============================================================
-
 let schemaReady: Promise<void> | null = null;
 
 function ensureSchema(): Promise<void> {
@@ -133,22 +129,28 @@ function ensureSchema(): Promise<void> {
     await sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS source_job_description TEXT`;
     await sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS match_report JSONB`;
 
+    await sql`
+      CREATE TABLE IF NOT EXISTS push_subscriptions (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        endpoint TEXT NOT NULL UNIQUE,
+        auth TEXT NOT NULL,
+        p256dh TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `;
+
+    await sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS share_token TEXT`;
+    await sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS share_enabled BOOLEAN NOT NULL DEFAULT FALSE`;
+    await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_documents_share_token ON documents(share_token) WHERE share_token IS NOT NULL`;
+
     await sql`CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents(user_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_activities_user_id ON activities(user_id)`;
   })();
 
   return schemaReady;
 }
-await sql`
-  CREATE TABLE IF NOT EXISTS push_subscriptions (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    endpoint TEXT NOT NULL UNIQUE,
-    auth TEXT NOT NULL,
-    p256dh TEXT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-  )
-`;
+
 export async function savePushSubscription({
   userId,
   endpoint,
@@ -712,6 +714,96 @@ export async function cloneMostRecentDocument(userId: string) {
 
   if (rows.length === 0) return null;
   return duplicateDocument(userId, rows[0].id);
+}
+// ============================================================
+// SHARING
+// ============================================================
+
+function generateShareToken(): string {
+  return randomUUID().replace(/-/g, "").slice(0, 16);
+}
+
+export async function enableSharing(userId: string, documentId: string) {
+  await ensureSchema();
+  const existing = await getDocument(userId, documentId);
+  if (!existing) return null;
+
+  const token = generateShareToken();
+  const timestamp = now();
+
+  await sql`
+    UPDATE documents
+    SET share_token = ${token}, share_enabled = TRUE, updated_at = ${timestamp}
+    WHERE id = ${documentId} AND user_id = ${userId}
+  `;
+
+  return { token, enabled: true as const };
+}
+
+export async function disableSharing(userId: string, documentId: string) {
+  await ensureSchema();
+  const existing = await getDocument(userId, documentId);
+  if (!existing) return null;
+
+  const timestamp = now();
+  await sql`
+    UPDATE documents
+    SET share_enabled = FALSE, updated_at = ${timestamp}
+    WHERE id = ${documentId} AND user_id = ${userId}
+  `;
+
+  return { enabled: false as const };
+}
+
+export async function regenerateShareToken(userId: string, documentId: string) {
+  await ensureSchema();
+  const existing = await getDocument(userId, documentId);
+  if (!existing) return null;
+
+  const token = generateShareToken();
+  const timestamp = now();
+  await sql`
+    UPDATE documents
+    SET share_token = ${token}, share_enabled = TRUE, updated_at = ${timestamp}
+    WHERE id = ${documentId} AND user_id = ${userId}
+  `;
+
+  return { token, enabled: true as const };
+}
+
+export async function getSharingStatus(userId: string, documentId: string) {
+  await ensureSchema();
+  const rows = (await sql`
+    SELECT share_token, share_enabled FROM documents
+    WHERE id = ${documentId} AND user_id = ${userId} LIMIT 1
+  `) as any[];
+
+  if (rows.length === 0) return null;
+  return {
+    enabled: Boolean(rows[0].share_enabled),
+    token: rows[0].share_token ?? null,
+  };
+}
+
+export async function getSharedDocument(token: string) {
+  await ensureSchema();
+  const rows = (await sql`
+    SELECT * FROM documents
+    WHERE share_token = ${token} AND share_enabled = TRUE LIMIT 1
+  `) as any[];
+
+  if (rows.length === 0) return null;
+  const row = rows[0];
+
+  return {
+    id: row.id,
+    title: row.title,
+    kind: row.kind,
+    templateId: row.template_id,
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at),
+    updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : String(row.updated_at),
+    content: row.content ?? null,
+  };
 }
 
 // ============================================================
