@@ -19,13 +19,23 @@ export async function convertPdfToDocx(
 ): Promise<Blob> {
   onProgress?.("Reading PDF…");
 
-    const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+  const pdfjs = await import("pdfjs-dist");
+
+  const isIOS =
+    typeof navigator !== "undefined" &&
+    /iPhone|iPad|iPod/.test(navigator.userAgent);
+
+  if (isIOS) {
+    pdfjs.GlobalWorkerOptions.workerSrc = "";
+    // @ts-ignore
+    pdfjs.GlobalWorkerOptions.workerPort = null;
+  } else {
+    pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+  }
 
   const arrayBuffer = await file.arrayBuffer();
   const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
   const pdf = await loadingTask.promise;
-  console.log("[pdf] total pages:", pdf.numPages);
 
   const allLines: LineItem[] = [];
 
@@ -34,14 +44,8 @@ export async function convertPdfToDocx(
     const page = await pdf.getPage(pageNum);
     const content = await page.getTextContent();
 
-    console.log(
-      `[pdf] page ${pageNum} items:`,
-      content.items.length,
-      "sample:",
-      content.items.slice(0, 5),
-    );
-
-    const rawItems: { text: string; fontSize: number; y: number; x: number }[] = [];
+    const rawItems: { text: string; fontSize: number; y: number; x: number }[] =
+      [];
     for (const item of content.items as any[]) {
       if (!item.str || item.str.trim().length === 0) continue;
       const y = item.transform[5];
