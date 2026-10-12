@@ -121,6 +121,7 @@ export interface CVData {
   phone: string;
   location: string;
   website: string;
+  linkedin: string;
   summary: string;
   experience: ExperienceItem[];
   education: EducationItem[];
@@ -253,6 +254,7 @@ export const emptyCV: CVData = {
   phone: "",
   location: "",
   website: "",
+  linkedin: "",
   summary: "",
   experience: [],
   education: [],
@@ -278,6 +280,7 @@ export const sampleCV: CVData = {
   phone: "+44 7700 900 321",
   location: "London, UK",
   website: "mayaokafor.design",
+  linkedin: "mayaokafor",
   summary: "Product designer with eight years of experience turning complicated workflows into calm, legible software. I work across research, interface design, and design systems, and I ship with engineers rather than handing off over walls.",
   experience: [
     {

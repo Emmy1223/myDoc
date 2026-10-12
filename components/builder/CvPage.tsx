@@ -6,6 +6,7 @@ import {
   Phone,
   MapPin,
   Globe,
+  Linkedin,
 } from "lucide-react";
 
 const pageSizes: Record<"A4" | "Letter", { w: string; h: string }> = {
@@ -70,6 +71,11 @@ function ContactItems({ cv, dark = false }: { cv: CVData; dark?: boolean }) {
       value: cv.website,
       href: normalizeUrl(cv.website),
     },
+    {
+      icon: Linkedin,
+      value: cv.linkedin || "",
+      href: normalizeLinkedInUrl(cv.linkedin || ""),
+    },
   ].filter((i) => i.value.trim().length > 0);
 
   if (items.length === 0) return null;
@@ -120,6 +126,14 @@ function normalizeUrl(url: string): string {
   if (!trimmed) return "";
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `https://${trimmed}`;
+}
+
+function normalizeLinkedInUrl(url: string): string {
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.includes("linkedin.com")) return `https://${trimmed}`;
+  return `https://linkedin.com/in/${trimmed}`;
 }
 
 function BulletList({

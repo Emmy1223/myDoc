@@ -19,14 +19,16 @@ export async function convertPdfToDocx(
 ): Promise<Blob> {
   onProgress?.("Reading PDF…");
 
-  const pdfjs = await import("pdfjs-dist");
-
   const isIOS =
     typeof navigator !== "undefined" &&
     /iPhone|iPad|iPod/.test(navigator.userAgent);
 
+  const pdfjs = isIOS
+    ? await import("pdfjs-dist/legacy/build/pdf.mjs")
+    : await import("pdfjs-dist");
+
   if (isIOS) {
-    pdfjs.GlobalWorkerOptions.workerSrc = "";
+    pdfjs.GlobalWorkerOptions.workerSrc = "disabled";
     // @ts-ignore
     pdfjs.GlobalWorkerOptions.workerPort = null;
   } else {

@@ -376,6 +376,7 @@ export default function ContentTab({
       phone: "",
       location: "",
       website: "",
+      linkedin: "",
       summary: "",
       experience: [],
       education: [],
@@ -462,6 +463,12 @@ export default function ContentTab({
                   onChange={(v) => setCv((prev) => ({ ...prev, website: v }))}
                 />
               </div>
+              <Field
+                label="LinkedIn (optional)"
+                value={cv.linkedin || ""}
+                placeholder="e.g., linkedin.com/in/mayaokafor or mayaokafor"
+                onChange={(v) => setCv((prev) => ({ ...prev, linkedin: v }))}
+              />
             </div>
           </div>
         )}
