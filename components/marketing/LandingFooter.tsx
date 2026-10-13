@@ -15,8 +15,8 @@ export default function LandingFooter() {
               my<span className="text-rust">Doc</span>
             </Link>
             <p className="mt-3 max-w-sm text-sm leading-7 text-stone-600">
-              The CV builder that does not lie. Tailor your CV to any job,
-              without inventing experience.
+              A CV builder and document workspace that does not lie. Write,
+              share, and export without inventing anything.
             </p>
           </div>
 

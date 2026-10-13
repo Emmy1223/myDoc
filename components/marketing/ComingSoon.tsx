@@ -1,5 +1,35 @@
 const ROADMAP = [
   {
+    status: "Shipped",
+    statusClasses: "text-emerald-800 border-emerald-200 bg-emerald-50",
+    items: [
+      {
+        title: "Public sharing links",
+        body: "Turn any CV or document into a link. Send it to a recruiter or client. No login required on their end. Revoke any time.",
+      },
+      {
+        title: "Sign in with LinkedIn",
+        body: "Create an account in one click with your LinkedIn profile. No password to remember.",
+      },
+      {
+        title: "Search across documents",
+        body: "Find any CV or document by title in two keystrokes. Live filtering as you type.",
+      },
+      {
+        title: "Invoice template",
+        body: "A client-ready layout with line items, totals, and payment details. Available in the document editor.",
+      },
+      {
+        title: "Install as an app",
+        body: "Add myDoc to your home screen on iOS, Android, or desktop. Push notifications built in.",
+      },
+      {
+        title: "PDF to Word (beta)",
+        body: "Upload a PDF and download an editable Word document. Runs entirely in your browser.",
+      },
+    ],
+  },
+  {
     status: "In development",
     statusClasses: "text-green-800 border-green-200 bg-green-50",
     items: [
@@ -18,12 +48,16 @@ const ROADMAP = [
     statusClasses: "text-rust border-orange-200 bg-orange-50",
     items: [
       {
-        title: "Public CV links",
-        body: "Share your CV as a URL with a preview card. Useful for portfolios and personal sites.",
+        title: "LinkedIn profile import",
+        body: "Pull your full experience and skills from a LinkedIn data export. No manual entry.",
       },
       {
         title: "More templates",
-        body: "Five additional layouts, including creative and academic styles.",
+        body: "Creative, academic, and technical layouts. Cover letters and proposals.",
+      },
+      {
+        title: "DOCX export",
+        body: "Download any myDoc document as an editable Word file.",
       },
     ],
   },
@@ -31,10 +65,6 @@ const ROADMAP = [
     status: "Exploring",
     statusClasses: "text-stone-700 border-stone-300 bg-stone-100",
     items: [
-      {
-        title: "LinkedIn import",
-        body: "Pull your experience and skills from a LinkedIn profile, without uploading a CV.",
-      },
       {
         title: "Cover letter generator",
         body: "Tailored cover letters using the same ethics as our CV tailoring. No fabrication.",
@@ -60,11 +90,12 @@ export default function ComingSoon() {
             Roadmap
           </p>
           <h2 className="mt-4 font-display text-3xl font-extrabold leading-[1.15] tracking-[-0.02em] text-ink md:text-4xl">
-            What is coming next
+            What we have shipped, and what is next
           </h2>
           <p className="mt-6 text-base leading-8 text-stone-700 md:text-lg md:leading-9">
-            Here is what we are actively building, what is planned, and what we
-            are still exploring. No fake promises, no vaporware.
+            An honest look at what is live today, what we are actively
+            building, and what we are still exploring. No fake promises, no
+            vaporware.
           </p>
         </div>
 
@@ -77,8 +108,12 @@ export default function ComingSoon() {
                 >
                   {group.status}
                 </span>
+                <span className="text-xs text-stone-400">
+                  {group.items.length}{" "}
+                  {group.items.length === 1 ? "feature" : "features"}
+                </span>
               </div>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {group.items.map((item) => (
                   <div
                     key={item.title}

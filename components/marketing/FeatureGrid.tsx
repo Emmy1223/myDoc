@@ -12,6 +12,26 @@ const FEATURES = [
     body: "Paste a job description, get a tailored version in 60 seconds.",
   },
   {
+    title: "Public sharing",
+    body: "Turn any CV or document into a link. No login required for viewers. Revoke any time.",
+  },
+  {
+    title: "PDF to Word",
+    body: "Upload a PDF and download an editable Word document. Runs entirely in your browser.",
+  },
+  {
+    title: "Sign in with LinkedIn",
+    body: "Create an account in one click with your LinkedIn profile. No password to remember.",
+  },
+  {
+    title: "Install as an app",
+    body: "Add myDoc to your home screen on iOS, Android, or desktop. Push notifications built in.",
+  },
+  {
+    title: "Search",
+    body: "Find any CV or document by title in two keystrokes. Live filtering as you type.",
+  },
+  {
     title: "ATS-friendly output",
     body: "Black on white. Standard fonts. No graphics that break parsers.",
   },
@@ -25,7 +45,7 @@ const FEATURES = [
   },
   {
     title: "Document templates",
-    body: "Blank, briefs, reports, meeting notes  with new ones added regularly.",
+    body: "Blank, briefs, reports, meeting notes, and invoices, with new ones added regularly.",
   },
   {
     title: "Live editor",
@@ -41,7 +61,7 @@ const FEATURES = [
   },
   {
     title: "Rich-text writing",
-    body: "Headings, lists, links, quotes, code, alignment  everything you need, without the clutter.",
+    body: "Headings, lists, links, quotes, code, alignment. Everything you need, without the clutter.",
   },
   {
     title: "Never invents",
@@ -50,14 +70,6 @@ const FEATURES = [
   {
     title: "Free forever",
     body: "No credit card. No document limit. No trial that expires.",
-  },
-  {
-    title: "Export as PDF",
-    body: "Print-ready PDF with the correct filename, ready to submit.",
-  },
-  {
-    title: "No account required to try",
-    body: "Start building without signing up. Sign up only to save to the cloud.",
   },
 ];
 
@@ -73,8 +85,8 @@ export default function FeatureGrid() {
             Every feature, no marketing fluff
           </h2>
           <p className="mt-4 text-base leading-7 text-stone-600">
-            myDoc handles both jobs: a CV builder for applications, and a
-            writing editor for everything else.
+            myDoc is a CV builder, a writing editor, a PDF converter, and a
+            sharing platform. All free, all in one workspace.
           </p>
         </div>
 
