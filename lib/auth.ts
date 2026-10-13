@@ -3,6 +3,7 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import { findOrCreateOAuthUser } from "@/lib/server-db";
+import LinkedIn from "next-auth/providers/linkedin";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET,
@@ -16,6 +17,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     GitHub({
       clientId: process.env.AUTH_GITHUB_ID,
       clientSecret: process.env.AUTH_GITHUB_SECRET,
+      allowDangerousEmailAccountLinking: true,
+    }),
+    LinkedIn({
+      clientId: process.env.LINKEDIN_CLIENT_ID,
+      clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
       allowDangerousEmailAccountLinking: true,
     }),
   ],
@@ -33,7 +39,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (!account) return false;
 
       const provider = account.provider;
-      if (provider !== "google" && provider !== "github") return false;
+      if (provider !== "google" && provider !== "github" && provider !== "linkedin") return false;
       if (!user.email) return false;
 
       const result = await findOrCreateOAuthUser({

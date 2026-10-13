@@ -13,6 +13,7 @@ export default function LoginClient({ nextPath }: { nextPath: string }) {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [githubLoading, setGithubLoading] = useState(false);
+  const [linkedinLoading, setLinkedinLoading] = useState(false);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,7 +60,18 @@ export default function LoginClient({ nextPath }: { nextPath: string }) {
     }
   }
 
-  const busy = loading || googleLoading || githubLoading;
+  async function handleLinkedinSignIn() {
+    setError("");
+    setLinkedinLoading(true);
+    try {
+      await signIn("linkedin", { callbackUrl: nextPath });
+    } catch {
+      setError("LinkedIn sign-in failed. Try again.");
+      setLinkedinLoading(false);
+    }
+  }
+
+  const busy = loading || googleLoading || githubLoading || linkedinLoading;
 
   return (
     <>
@@ -108,6 +120,33 @@ export default function LoginClient({ nextPath }: { nextPath: string }) {
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
               </svg>
               Continue with GitHub
+            </>
+          )}
+        </button>
+
+        {/* LinkedIn */}
+        <button
+          type="button"
+          onClick={handleLinkedinSignIn}
+          disabled={busy}
+          className="inline-flex min-h-11 w-full items-center justify-center gap-3 border border-stone-300 bg-white px-4 text-sm font-semibold text-ink hover:bg-stone-50 disabled:cursor-wait disabled:opacity-70 transition-colors"
+        >
+          {linkedinLoading ? (
+            <>
+              <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={2} />
+              Connecting to LinkedIn…
+            </>
+          ) : (
+            <>
+              <svg
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                fill="#0A66C2"
+              >
+                <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43c-1.14 0-2.06-.93-2.06-2.06 0-1.14.92-2.06 2.06-2.06 1.14 0 2.06.92 2.06 2.06 0 1.13-.92 2.06-2.06 2.06zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z" />
+              </svg>
+              Continue with LinkedIn
             </>
           )}
         </button>
