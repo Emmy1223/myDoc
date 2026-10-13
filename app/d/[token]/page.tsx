@@ -6,6 +6,7 @@ import { isRichDocContent, type RichDocNode } from "@/lib/doc-data";
 import type { CVData, TemplateId } from "@/lib/cv-data";
 import { emptyCV, DEFAULT_SECTION_ORDER } from "@/lib/cv-data";
 import CvPage from "@/components/builder/CvPage";
+import SharedCv from "@/components/share/SharedCv";
 import PublicDocView from "@/components/share/PublicDocView";
 
 export const runtime = "nodejs";
@@ -36,13 +37,11 @@ export default async function SharedPage({
           >
             my<span className="text-rust">Doc</span>
           </Link>
-          <p className="text-xs text-stone-500">
-            Shared document
-          </p>
+          <p className="text-xs text-stone-500">Shared document</p>
         </div>
       </header>
 
-      <main className="px-6 py-8 md:py-12">
+      <main className="px-4 py-8 md:px-6 md:py-12">
         {isCv ? (
           <CvView content={doc.content} templateId={doc.templateId} />
         ) : (
@@ -89,13 +88,7 @@ function CvView({
     ? (templateId as TemplateId)
     : "folio";
 
-  return (
-    <div className="mx-auto max-w-3xl">
-      <div className="overflow-hidden border border-stone-300 bg-white shadow-sm">
-        <CvPage cv={cv} template={template} density="normal" pageSize="A4" />
-      </div>
-    </div>
-  );
+  return <SharedCv cv={cv} template={template} />;
 }
 
 function DocView({

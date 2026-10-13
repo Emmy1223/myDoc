@@ -334,7 +334,7 @@ export default function BuilderClient({
       if (height <= twoPages) {
 
         if (
-          height <= onePage * 0.8 &&
+          height <= onePage * 0.6 &&
           (measuring === "compact" || measuring === "normal")
         ) {
           setMeasuring(measuring === "compact" ? "normal" : "roomy");

@@ -186,7 +186,7 @@ function SectionWrapper({
 }) {
   if (!children) return null;
   return (
-    <section style={{ marginTop: gap }}>
+    <section style={{ marginTop: `min(${gap}, 4mm)` }} className="cv-section">
       <h3 className="cv-section-heading text-[9pt] font-bold uppercase tracking-[0.15em] text-black">
         {title}
       </h3>
