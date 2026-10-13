@@ -172,6 +172,15 @@ function SidebarContent({
           onClick={onNavigate}
           variant={variant}
         />
+
+        <SidebarLink
+          href="/help"
+          icon={HelpCircle}
+          label="Help"
+          active={pathname.startsWith("/help")}
+          onClick={onNavigate}
+          variant={variant}
+        />
       </nav>
 
       <div

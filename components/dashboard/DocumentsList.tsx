@@ -22,6 +22,7 @@ import DocumentTemplateChooser from "./DocumentTemplateChooser";
 import OnboardingChat from "@/components/builder/OnboardingChat";
 import { getDocTemplate, type DocTemplateId } from "@/lib/doc-data";
 import PushOptInModal from "@/components/dashboard/PushOptInModal";
+import WelcomeModal from "@/components/dashboard/WelcomeModal";
 
 type DocumentItem = {
   id: string;
@@ -78,6 +79,22 @@ export default function DocumentsList({
 
   // Existing AI onboarding modal — now opened from the chooser's CV path
   const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (initialDocuments.length > 0) return;
+    if (localStorage.getItem("mydoc-welcome-seen") === "1") return;
+    setWelcomeOpen(true);
+  }, [initialDocuments.length]);
+
+  const handleWelcomeComplete = () => {
+    try {
+      localStorage.setItem("mydoc-welcome-seen", "1");
+    } catch {
+    }
+    setWelcomeOpen(false);
+  };
 
   useEffect(() => {
     if (!notice) return;
@@ -629,7 +646,12 @@ export default function DocumentsList({
         documentTitle={shareDoc?.title ?? ""}
         onClose={() => setShareDoc(null)}
       />
-   <PushOptInModal />      
+
+      {/* Welcome modal — shows first, then push opt-in follows */}
+      <WelcomeModal open={welcomeOpen} onComplete={handleWelcomeComplete} />
+
+      {/* Push opt-in is deferred until the welcome modal closes */}
+      {!welcomeOpen && <PushOptInModal />}
 
       {/* New: CV-vs-Document chooser */}
       <NewDocumentChooser
