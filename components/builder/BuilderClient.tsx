@@ -86,7 +86,7 @@ export default function BuilderClient({
   const [docName, setDocName] = useState("");
   const [showGuides, setShowGuides] = useState(true);
   const [autoSave, setAutoSave] = useState(true);
-  const [autoFit, setAutoFit] = useState(true);
+  const [autoFit, setAutoFit] = useState(false);
   const [highlightDropzone, setHighlightDropzone] = useState(startUpload);
   const [saved, setSaved] = useState(true);
   const [scale, setScale] = useState(0.5);
