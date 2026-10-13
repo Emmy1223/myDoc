@@ -299,6 +299,14 @@ export default function BuilderClient({
       document.title = pdfTitle;
       window.print();
 
+      if (documentId) {
+        fetch(`/api/documents/${encodeURIComponent(documentId)}`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "export" }),
+        }).catch(() => {});
+      }
+
       const restore = () => {
         document.title = previousTitle;
         window.removeEventListener("afterprint", restore);
@@ -307,7 +315,7 @@ export default function BuilderClient({
     }, 700);
 
     return () => window.clearTimeout(timer);
-  }, [startPrint, documentLoaded, docName, cv.fullName]);
+  }, [startPrint, documentLoaded, docName, cv.fullName, documentId]);
 
   useEffect(() => {
     if (!documentLoaded) return;
@@ -384,22 +392,24 @@ export default function BuilderClient({
     return "";
   };
 
+  const fireExportActivity = () => {
+    if (!documentId) return;
+    fetch(`/api/documents/${encodeURIComponent(documentId)}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "export" }),
+    }).catch(() => {
+      // Fire-and-forget — the print still happens even if this fails
+    });
+  };
+
   const handleDownload = () => {
-    const handleDownload = () => {
-  console.log("DOWNLOAD CLICKED. docName:", JSON.stringify(docName));
-  console.log("isDefaultName?", isDefaultName(docName));
-  if (isDefaultName(docName)) {
-    setNameModalOpen(true);
-    return;
-  }
-  saveToLocalStorage(cv);
-  window.print();
-};
     if (isDefaultName(docName)) {
       setNameModalOpen(true);
       return;
     }
     saveToLocalStorage(cv);
+    fireExportActivity();
     window.print();
   };
 
@@ -407,7 +417,7 @@ export default function BuilderClient({
     setDocName(name);
     setNameModalOpen(false);
     saveToLocalStorage(cv);
-    // Let React paint the new title before triggering the print dialog
+    fireExportActivity();
     window.setTimeout(() => {
       window.print();
     }, 100);

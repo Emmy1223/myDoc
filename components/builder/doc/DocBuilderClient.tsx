@@ -197,7 +197,16 @@ export default function DocBuilderClient({
     [],
   );
 
-  const handleDownload = () => window.print();
+  const handleDownload = () => {
+    if (activeId) {
+      fetch(`/api/documents/${encodeURIComponent(activeId)}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "export" }),
+      }).catch(() => {});
+    }
+    window.print();
+  };
 
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden md:h-screen md:flex-row">
