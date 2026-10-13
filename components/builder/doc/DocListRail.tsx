@@ -1,8 +1,8 @@
 // components/builder/doc/DocListRail.tsx
 "use client";
 
-import { useState } from "react";
-import { FileText, Plus, X, Menu } from "lucide-react";
+import { useMemo, useState } from "react";
+import { FileText, Plus, Search, X, Menu } from "lucide-react";
 import {
   docTemplates,
   type DocTemplate,
@@ -33,6 +33,15 @@ export default function DocListRail({
   const [pickerOpen, setPickerOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredDocuments = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return documents;
+    return documents.filter((d) =>
+      d.title.toLowerCase().includes(query),
+    );
+  }, [documents, searchQuery]);
 
   const handlePick = async (tpl: DocTemplate) => {
     setCreating(true);
@@ -73,14 +82,44 @@ export default function DocListRail({
         </div>
       </div>
 
+      {documents.length > 0 && (
+        <div className="relative border-b border-stone-200 px-3 py-2">
+          <Search
+            className="pointer-events-none absolute left-5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400"
+            strokeWidth={2}
+          />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search"
+            className="w-full border border-stone-200 bg-stone-50 py-1.5 pl-8 pr-7 text-xs text-ink outline-none placeholder:text-stone-400 focus:border-rust focus:bg-white"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-0.5 text-stone-500 hover:text-ink"
+              aria-label="Clear search"
+            >
+              <X className="h-3 w-3" strokeWidth={2} />
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="min-h-0 flex-1 overflow-y-auto">
         {documents.length === 0 ? (
           <p className="px-4 py-6 text-xs text-stone-400">
             No documents yet. Click + to start one.
           </p>
+        ) : filteredDocuments.length === 0 ? (
+          <p className="px-4 py-6 text-xs text-stone-400">
+            No documents match.
+          </p>
         ) : (
           <ul>
-            {documents.map((d) => {
+            {filteredDocuments.map((d) => {
               const active = d.id === activeId;
               return (
                 <li key={d.id}>

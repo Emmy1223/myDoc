@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -9,6 +9,7 @@ import {
   FilePlus2,
   LoaderCircle,
   Plus,
+  Search,
   Upload,
   X,
 } from "lucide-react";
@@ -67,6 +68,7 @@ export default function DocumentsList({
   const [notice, setNotice] = useState<Notice>(null);
   const [previewDoc, setPreviewDoc] = useState<DocumentItem | null>(null);
   const [shareDoc, setShareDoc] = useState<DocumentItem | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const uploadInput = useRef<HTMLInputElement>(null);
 
   // New modal states
@@ -401,7 +403,13 @@ export default function DocumentsList({
       return;
     }
   };
-
+  const filteredDocuments = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return documents;
+    return documents.filter((doc) =>
+      doc.title.toLowerCase().includes(query),
+    );
+  }, [documents, searchQuery]);
   return (
     <div className="mx-auto max-w-4xl">
       <input
@@ -439,6 +447,32 @@ export default function DocumentsList({
         </button>
       </div>
 
+      {documents.length > 0 && (
+        <div className="relative mt-4">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400"
+            strokeWidth={2}
+          />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search documents by title"
+            className="w-full border border-stone-300 bg-white py-2.5 pl-10 pr-10 text-sm text-ink outline-none placeholder:text-stone-400 focus:border-rust"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 border border-transparent p-1 text-stone-500 transition-colors hover:border-stone-300 hover:text-ink"
+              aria-label="Clear search"
+            >
+              <X className="h-3.5 w-3.5" strokeWidth={2} />
+            </button>
+          )}
+        </div>
+      )}
+
       {notice && (
         <div
           role="status"
@@ -468,7 +502,12 @@ export default function DocumentsList({
         />
       ) : (
         <ul className="mt-2">
-          {documents.map((doc) => {
+          {filteredDocuments.length === 0 && searchQuery.trim() !== "" && (
+            <li className="border-b border-stone-200 py-8 text-center text-sm text-stone-500">
+              No documents match &ldquo;{searchQuery}&rdquo;
+            </li>
+          )}
+          {filteredDocuments.map((doc) => {
             const isWorking = workingId === doc.id;
             const isRenaming = renamingId === doc.id;
             const menuOpen = openMenuId === doc.id;
