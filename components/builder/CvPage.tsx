@@ -1,7 +1,7 @@
 // components/builder/CvPage.tsx
 import React from "react";
 import type { CVData, TemplateId, Density } from "@/lib/cv-data";
-import { parseSkillGroups } from "@/lib/cv-data";
+import { parseSkillGroups, getFontCss } from "@/lib/cv-data";
 import {
   Mail,
   Phone,
@@ -188,7 +188,7 @@ function SectionWrapper({
   if (!children) return null;
   return (
     <section style={{ marginTop: `min(${gap}, 4mm)` }} className="cv-section">
-      <h3 className="cv-section-heading text-[9pt] font-bold uppercase tracking-[0.15em] text-black">
+      <h3 className="cv-section-heading text-[9pt] font-bold uppercase tracking-normal text-black">
         {title}
       </h3>
       <div className="mt-[2mm]">{children}</div>
@@ -454,7 +454,7 @@ function Folio({
         <h1 className="font-display text-[27pt] font-extrabold leading-none tracking-[-0.02em] text-black">
           <Or value={cv.fullName} fallback="Your Name" />
         </h1>
-        <p className="mt-[2mm] text-[11pt] font-semibold tracking-[0.14em] text-black">
+        <p className="mt-[2mm] text-[11pt] font-semibold tracking-normal text-black">
           <Or value={cv.title} fallback="Job Title" />
         </p>
         <div className="mt-[1.5mm]">
@@ -1843,6 +1843,8 @@ export default function CvPage({
         {
           "--cv-page-w": size.w,
           "--cv-page-h": size.h,
+          fontFamily: getFontCss(cv.fontFamily ?? "arial"),
+          zoom: (cv.fontSize ?? 11) / 11,
         } as React.CSSProperties
       }
     >

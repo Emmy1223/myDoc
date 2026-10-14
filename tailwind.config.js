@@ -8,7 +8,7 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: [
-          "'Geist Variable'",
+          "'Geist'",
           "Inter",
           "ui-sans-serif",
           "system-ui",
@@ -16,8 +16,8 @@ module.exports = {
           "sans-serif",
         ],
         display: [
-          "'Plus Jakarta Sans Variable'",
-          "'Geist Variable'",
+          "'Plus Jakarta Sans'",
+          "'Geist'",
           "Inter",
           "ui-sans-serif",
           "sans-serif",

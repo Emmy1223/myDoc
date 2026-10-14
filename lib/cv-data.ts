@@ -1,4 +1,39 @@
 // lib/cv-data.ts
+export type FontFamily =
+  | "arial"
+  | "helvetica"
+  | "calibri"
+  | "verdana"
+  | "trebuchet"
+  | "georgia"
+  | "times"
+  | "garamond"
+  | "cambria"
+  | "courier";
+
+export type FontSize = 10 | 11 | 12;
+
+export const FONT_FAMILIES: {
+  id: FontFamily;
+  name: string;
+  description: string;
+  css: string;
+}[] = [
+  { id: "arial",     name: "Arial",            description: "Modern, safest for ATS",  css: "Arial, Helvetica, sans-serif" },
+  { id: "helvetica", name: "Helvetica",        description: "Clean, professional",      css: "Helvetica, Arial, sans-serif" },
+  { id: "calibri",   name: "Calibri",          description: "Microsoft default",        css: "Calibri, Carlito, Arial, sans-serif" },
+  { id: "verdana",   name: "Verdana",          description: "Very readable",            css: "Verdana, Geneva, sans-serif" },
+  { id: "trebuchet", name: "Trebuchet MS",     description: "Friendly sans",            css: "'Trebuchet MS', Tahoma, sans-serif" },
+  { id: "georgia",   name: "Georgia",          description: "Elegant serif",            css: "Georgia, 'Times New Roman', serif" },
+  { id: "times",     name: "Times New Roman",  description: "Classic formal",           css: "'Times New Roman', Times, serif" },
+  { id: "garamond",  name: "Garamond",         description: "Refined serif",            css: "Garamond, Georgia, serif" },
+  { id: "cambria",   name: "Cambria",          description: "Modern serif",             css: "Cambria, Georgia, serif" },
+  { id: "courier",   name: "Courier New",      description: "Monospace, technical",     css: "'Courier New', Courier, monospace" },
+];
+
+export function getFontCss(id: FontFamily): string {
+  return FONT_FAMILIES.find((f) => f.id === id)?.css ?? FONT_FAMILIES[0].css;
+}
 
 export interface ExperienceItem {
   id: string;
@@ -122,6 +157,8 @@ export interface CVData {
   location: string;
   website: string;
   linkedin: string;
+  fontFamily: FontFamily;
+  fontSize: FontSize;
   summary: string;
   experience: ExperienceItem[];
   education: EducationItem[];
@@ -255,6 +292,8 @@ export const emptyCV: CVData = {
   location: "",
   website: "",
   linkedin: "",
+  fontFamily: "arial",
+  fontSize: 11,
   summary: "",
   experience: [],
   education: [],
@@ -281,6 +320,8 @@ export const sampleCV: CVData = {
   location: "London, UK",
   website: "mayaokafor.design",
   linkedin: "mayaokafor",
+  fontFamily: "arial",
+  fontSize: 11,
   summary: "Product designer with eight years of experience turning complicated workflows into calm, legible software. I work across research, interface design, and design systems, and I ship with engineers rather than handing off over walls.",
   experience: [
     {

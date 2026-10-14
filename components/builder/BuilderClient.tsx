@@ -12,7 +12,7 @@ import {
   CloudOff,
   Save,
 } from "lucide-react";
-import type { CVData, TemplateId, Density } from "@/lib/cv-data";
+import type { CVData, TemplateId, Density, FontSize, FontFamily } from "@/lib/cv-data";
 import { emptyCV, DEFAULT_SECTION_ORDER } from "@/lib/cv-data";
 import Dropzone from "./Dropzone";
 import ContentTab from "./ContentTab";
@@ -82,11 +82,13 @@ export default function BuilderClient({
   const [tab, setTab] = useState<Tab>("content");
   const [template, setTemplate] = useState<TemplateId>("folio");
   const [pageSize, setPageSize] = useState<"A4" | "Letter">("A4");
-  const [density, setDensity] = useState<Density>("auto");
+  const [density, setDensity] = useState<Density>("compact");
   const [docName, setDocName] = useState("");
   const [showGuides, setShowGuides] = useState(true);
   const [autoSave, setAutoSave] = useState(true);
   const [autoFit, setAutoFit] = useState(false);
+  const [fontFamily, setFontFamily] = useState<FontFamily>("arial");
+  const [fontSize, setFontSize] = useState<FontSize>(11);
   const [highlightDropzone, setHighlightDropzone] = useState(startUpload);
   const [saved, setSaved] = useState(true);
   const [scale, setScale] = useState(0.5);
@@ -123,6 +125,8 @@ export default function BuilderClient({
         bulletStyle,
         bulletSpacing,
         autoFit,
+        fontFamily,
+        fontSize,
       };
       try {
         localStorage.setItem("myDoc_settings", JSON.stringify(settings));
@@ -138,8 +142,20 @@ export default function BuilderClient({
     bulletStyle,
     bulletSpacing,
     autoFit,
+    fontFamily,
+    fontSize,
     autoSave,
   ]);
+
+  // Sync font settings into cv so the preview and save reflect them
+  useEffect(() => {
+    setCv((prev) => {
+      if (prev.fontFamily === fontFamily && prev.fontSize === fontSize) {
+        return prev;
+      }
+      return { ...prev, fontFamily, fontSize };
+    });
+  }, [fontFamily, fontSize]);
 
   useEffect(() => {
     try {
@@ -155,6 +171,8 @@ export default function BuilderClient({
         if (settings.bulletStyle) setBulletStyle(settings.bulletStyle);
         if (settings.bulletSpacing) setBulletSpacing(settings.bulletSpacing);
         if (typeof settings.autoFit === "boolean") setAutoFit(settings.autoFit);
+       if (typeof settings.fontFamily === "string") setFontFamily(settings.fontFamily);
+        if (typeof settings.fontSize === "number") setFontSize(settings.fontSize);
       }
     } catch (error) {
       console.error("Failed to load settings:", error);
@@ -198,7 +216,7 @@ export default function BuilderClient({
           sectionOrder:
             (doc.content as any)?.sectionOrder || DEFAULT_SECTION_ORDER,
         };
-
+        
         setCv(loadedCv);
         const title = doc.title?.trim() ?? "";
         const looksUnnamed =
@@ -240,8 +258,8 @@ export default function BuilderClient({
         await fetch(`/api/documents/${encodeURIComponent(documentId)}`, {
           method: "PUT",
           headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-            content: cv,
+          body: JSON.stringify({
+            content: { ...cv, fontFamily, fontSize },
             title: docName.trim() || null,
             templateId: template,
           }),
@@ -547,6 +565,10 @@ export default function BuilderClient({
               setAutoSave={setAutoSave}
               autoFit={autoFit}
               setAutoFit={setAutoFit}
+              fontFamily={fontFamily}
+              setFontFamily={setFontFamily}
+              fontSize={fontSize}
+              setFontSize={setFontSize}
             />
           )}
         </div>
@@ -601,14 +623,8 @@ export default function BuilderClient({
                 height: pagePx.h * scale,
               }}
             >
-              {showGuides && (
-                <div
-                  className="pointer-events-none absolute inset-0 border-l border-r border-dashed border-stone-400/70 print:hidden"
-                  aria-hidden
-                />
-              )}
               <div
-                className="cv-scale-wrap"
+                className="cv-scale-wrap relative"
                 style={{
                   width: pagePx.w,
                   height: pagePx.h,
@@ -616,8 +632,26 @@ export default function BuilderClient({
                   transformOrigin: "top left",
                 }}
               >
+                {showGuides && (
+                  <div
+                    aria-hidden
+                    className="print:hidden"
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: "20mm",
+                      right: "20mm",
+                      height: "100%",
+                      borderLeft: "2px dashed #c2410c",
+                      borderRight: "2px dashed #c2410c",
+                      pointerEvents: "none",
+                      opacity: 0.5,
+                      zIndex: 5,
+                    }}
+                  />
+                )}
                 <CvPage
-                  cv={cv}
+                  cv={{ ...cv, fontFamily, fontSize }}
                   template={template}
                   density={resolvedDensity}
                   pageSize={pageSize}
@@ -632,7 +666,7 @@ export default function BuilderClient({
 
       {measuring && (
         <MeasureCv
-          cv={cv}
+          cv={{ ...cv, fontFamily, fontSize }}
           template={template}
           density={measuring}
           pageSize={pageSize}

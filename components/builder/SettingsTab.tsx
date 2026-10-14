@@ -1,8 +1,8 @@
 "use client";
 
-import type { Density } from "@/lib/cv-data";
+import type { Density, FontFamily, FontSize } from "@/lib/cv-data";
+import { FONT_FAMILIES } from "@/lib/cv-data";
 import { Field } from "./fields";
-
 export default function SettingsTab({
   docName,
   setDocName,
@@ -16,6 +16,10 @@ export default function SettingsTab({
   setAutoSave,
   autoFit,
   setAutoFit,
+  fontFamily,
+  setFontFamily,
+  fontSize,
+  setFontSize,
 }: {
   docName: string;
   setDocName: (v: string) => void;
@@ -29,6 +33,10 @@ export default function SettingsTab({
   setAutoSave: (v: boolean) => void;
   autoFit: boolean;
   setAutoFit: (v: boolean) => void;
+  fontFamily: FontFamily;
+  setFontFamily: (v: FontFamily) => void;
+  fontSize: FontSize;
+  setFontSize: (v: FontSize) => void;
 }) {
   return (
     <div className="space-y-6 border-t border-stone-200 p-4">
@@ -62,6 +70,62 @@ export default function SettingsTab({
               }`}
             >
               {size}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <h3 className="font-display text-sm font-bold tracking-tightish text-ink">
+          Font family
+        </h3>
+        <p className="mt-1 text-xs leading-5 text-stone-500">
+          All options are ATS-safe system fonts. Choose one that matches your industry.
+        </p>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {FONT_FAMILIES.map((f) => {
+            const selected = fontFamily === f.id;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setFontFamily(f.id)}
+                style={{ fontFamily: f.css }}
+                className={`border px-3 py-2.5 text-left transition-colors ${
+                  selected
+                    ? "border-rust bg-orange-50"
+                    : "border-stone-300 bg-white hover:border-stone-900"
+                }`}
+              >
+                <span className="block text-sm text-ink">Aa</span>
+                <span className="mt-0.5 block text-xs font-medium text-ink">
+                  {f.name}
+                </span>
+                <span className="mt-0.5 block text-[10px] text-stone-500">
+                  {f.description}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
+        <h3 className="font-display text-sm font-bold tracking-tightish text-ink">
+          Font size
+        </h3>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {([10, 11, 12] as const).map((size) => (
+            <button
+              key={size}
+              type="button"
+              onClick={() => setFontSize(size)}
+              className={`border px-3 py-2.5 text-sm font-semibold ${
+                fontSize === size
+                  ? "border-rust bg-orange-50 text-rust"
+                  : "border-stone-300 bg-white text-stone-700 hover:border-stone-900"
+              }`}
+            >
+              {size}pt
             </button>
           ))}
         </div>

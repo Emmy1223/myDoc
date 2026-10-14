@@ -80,8 +80,14 @@
   .cv-page {
     border: none;
     margin: 0;
-    /* No forced break. If the content fits in one page, this prints one page.
-       If the content overflows, the browser paginates naturally. */
+  }
+
+  /* Force ATS-safe text rendering in exported PDFs */
+  .cv-page,
+  .cv-page * {
+    -webkit-font-smoothing: auto !important;
+    text-rendering: geometricPrecision !important;
+    font-variant-ligatures: none !important;
   }
 
   @page {
@@ -105,7 +111,7 @@
   page-break-after: avoid;
 }
 
-/* ─── Rich-text document editor ─────────────────────────── */
+/* Rich-text document editor */
 .doc-prose {
   font-size: 11pt;
   line-height: 1.6;

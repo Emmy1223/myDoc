@@ -3,6 +3,7 @@ import { SessionProvider } from "next-auth/react";
 import { Analytics } from "@vercel/analytics/next";
 import "@fontsource/geist/400.css";
 import "@fontsource/geist/500.css";
+import "@fontsource/geist/600.css";
 import "@fontsource/geist/700.css";
 import "@fontsource/geist/800.css";
 
