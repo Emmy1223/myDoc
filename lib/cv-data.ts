@@ -344,3 +344,42 @@ export type SectionDataMap = {
   declaration: DeclarationItem[];
   custom: CustomSectionItem[];
 };
+
+export type SkillGroup = {
+  label: string | null;
+  items: string[];
+};
+
+export function parseSkillGroups(skills: string[]): SkillGroup[] {
+  const groups: SkillGroup[] = [];
+  const ungrouped: string[] = [];
+
+  for (const raw of skills) {
+    const skill = raw.trim();
+    if (!skill) continue;
+
+    const colonIndex = skill.indexOf(":");
+    if (colonIndex > 0) {
+      const label = skill.slice(0, colonIndex).trim();
+      const rest = skill.slice(colonIndex + 1).trim();
+      if (label && rest) {
+        const items = rest
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (items.length > 0) {
+          groups.push({ label, items });
+          continue;
+        }
+      }
+    }
+
+    ungrouped.push(skill);
+  }
+
+  if (ungrouped.length > 0) {
+    groups.unshift({ label: null, items: ungrouped });
+  }
+
+  return groups;
+}

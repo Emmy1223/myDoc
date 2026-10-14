@@ -1,6 +1,7 @@
 // components/builder/CvPage.tsx
 import React from "react";
 import type { CVData, TemplateId, Density } from "@/lib/cv-data";
+import { parseSkillGroups } from "@/lib/cv-data";
 import {
   Mail,
   Phone,
@@ -537,16 +538,7 @@ function Folio({
           case "skills":
             return cv.skills.length > 0 ? (
               <SectionWrapper key="skills" title="Skills" gap={gap}>
-                <div className="flex flex-wrap gap-x-[3mm] gap-y-[1mm]">
-                  {cv.skills.map((s, i) => (
-                    <span key={i} className="text-[8.5pt] text-black">
-                      {s}
-                      {i < cv.skills.length - 1 && (
-                        <span className="ml-[3mm] text-black">·</span>
-                      )}
-                    </span>
-                  ))}
-                </div>
+                <SkillList skills={cv.skills} />
               </SectionWrapper>
             ) : null;
           case "languages":
@@ -677,13 +669,27 @@ function Ledger({
         {cv.skills.length > 0 && (
           <>
             <p className="mt-[7mm] text-[8.5pt] font-bold uppercase tracking-[0.2em] text-white">Skills</p>
-            <ul className="mt-[2mm]">
-              {cv.skills.map((s, i) => (
-                <li key={i} className="border-b border-gray-600 py-[1mm] text-[8.5pt] text-gray-200">
-                  {s}
-                </li>
+            <div className="mt-[2mm] space-y-[3mm]">
+              {parseSkillGroups(cv.skills).map((group, gi) => (
+                <div key={gi}>
+                  {group.label && (
+                    <p className="text-[8pt] font-bold uppercase tracking-wider text-white">
+                      {group.label}
+                    </p>
+                  )}
+                  <ul className={group.label ? "mt-[1mm]" : ""}>
+                    {group.items.map((item, i) => (
+                      <li
+                        key={i}
+                        className="border-b border-gray-600 py-[1mm] text-[8.5pt] text-gray-200"
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           </>
         )}
 
@@ -870,16 +876,27 @@ function Slab({
           case "skills":
             return cv.skills.length > 0 ? (
               <SlabSection key="skills" title={`${getSectionNumber()} / Skills`} mt={gap}>
-                <ul className="flex flex-wrap gap-[1.5mm]">
-                  {cv.skills.map((s, i) => (
-                    <li
-                      key={i}
-                      className="border border-gray-400 px-[2mm] py-[0.5mm] font-mono text-[8pt] uppercase tracking-wide text-black border-gray-600"
-                    >
-                      {s.toLowerCase().replace(/\s+/g, "-")}
-                    </li>
+                <div className="space-y-[3mm]">
+                  {parseSkillGroups(cv.skills).map((group, gi) => (
+                    <div key={gi}>
+                      {group.label && (
+                        <p className="font-mono text-[8pt] font-bold uppercase tracking-[0.15em] text-black">
+                          {group.label}
+                        </p>
+                      )}
+                      <ul className={`flex flex-wrap gap-[1.5mm] ${group.label ? "mt-[1.5mm]" : ""}`}>
+                        {group.items.map((item, i) => (
+                          <li
+                            key={i}
+                            className="border border-gray-400 px-[2mm] py-[0.5mm] font-mono text-[8pt] uppercase tracking-wide text-black border-gray-600"
+                          >
+                            {item.toLowerCase().replace(/\s+/g, "-")}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </SlabSection>
             ) : null;
           case "languages":
@@ -1099,13 +1116,24 @@ function Compact({
         return cv.skills.length > 0 ? (
           <div key="skills">
             <CompactLabel>Skills</CompactLabel>
-            <ul className="mt-[1.5mm] space-y-[0.5mm]">
-              {cv.skills.map((s, i) => (
-                <li key={i} className="text-[8.5pt] text-black">
-                  {s}
-                </li>
+            <div className="mt-[1.5mm] space-y-[2mm]">
+              {parseSkillGroups(cv.skills).map((group, gi) => (
+                <div key={gi}>
+                  {group.label && (
+                    <p className="text-[8pt] font-bold uppercase tracking-wider text-gray-600">
+                      {group.label}
+                    </p>
+                  )}
+                  <ul className={`space-y-[0.5mm] ${group.label ? "mt-[0.5mm]" : ""}`}>
+                    {group.items.map((item, i) => (
+                      <li key={i} className="text-[8.5pt] text-black">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         ) : null;
       case "languages":
@@ -1488,18 +1516,24 @@ function Editorial({
             return cv.skills.length > 0 ? (
               <section key="skills" style={{ marginTop: gap }}>
                 <EditorialLabel>Skills</EditorialLabel>
-                <div className="mt-[3mm] flex flex-wrap gap-x-[4mm] gap-y-[1mm]">
-                  {cv.skills.map((s, i) => (
-                    <span
-                      key={i}
-                      className="text-[9pt] text-black"
-                      style={{ fontFamily: "ui-serif, Georgia, serif" }}
-                    >
-                      {s}
-                      {i < cv.skills.length - 1 && (
-                        <span className="ml-[4mm] text-gray-400">/</span>
+                <div className="mt-[3mm] space-y-[3mm]">
+                  {parseSkillGroups(cv.skills).map((group, gi) => (
+                    <div key={gi}>
+                      {group.label && (
+                        <p
+                          className="text-[9pt] font-bold uppercase tracking-[0.12em] text-black"
+                          style={{ fontFamily: "ui-serif, Georgia, serif" }}
+                        >
+                          {group.label}
+                        </p>
                       )}
-                    </span>
+                      <p
+                        className={`text-[9pt] text-black ${group.label ? "mt-[0.5mm]" : ""}`}
+                        style={{ fontFamily: "ui-serif, Georgia, serif" }}
+                      >
+                        {group.items.join(", ")}
+                      </p>
+                    </div>
                   ))}
                 </div>
               </section>
@@ -1679,14 +1713,25 @@ function Modern({
             return cv.skills.length > 0 ? (
               <section key="skills" style={{ marginTop: gap }}>
                 <ModernLabel>Skills</ModernLabel>
-                <div className="mt-[3mm] flex flex-wrap gap-[2mm]">
-                  {cv.skills.map((s, i) => (
-                    <span
-                      key={i}
-                      className="border border-rust/40 bg-rust/5 px-[2.5mm] py-[0.7mm] text-[8.5pt] font-medium text-black"
-                    >
-                      {s}
-                    </span>
+                <div className="mt-[3mm] space-y-[3mm]">
+                  {parseSkillGroups(cv.skills).map((group, gi) => (
+                    <div key={gi}>
+                      {group.label && (
+                        <p className="text-[8pt] font-bold uppercase tracking-[0.15em] text-gray-600">
+                          {group.label}
+                        </p>
+                      )}
+                      <div className={`flex flex-wrap gap-[2mm] ${group.label ? "mt-[1.5mm]" : ""}`}>
+                        {group.items.map((item, i) => (
+                          <span
+                            key={i}
+                            className="border border-rust/40 bg-rust/5 px-[2.5mm] py-[0.7mm] text-[8.5pt] font-medium text-black"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </section>
@@ -1729,6 +1774,41 @@ function ModernLabel({ children }: { children: React.ReactNode }) {
         {children}
       </h3>
       <span className="h-px flex-1 bg-gray-200" />
+    </div>
+  );
+}
+
+function SkillList({ skills }: { skills: string[] }) {
+  const groups = parseSkillGroups(skills);
+  const hasGroups = groups.some((g) => g.label !== null);
+
+  if (!hasGroups) {
+    return (
+      <div className="flex flex-wrap gap-x-[3mm] gap-y-[1mm]">
+        {skills.map((s, i) => (
+          <span key={i} className="text-[8.5pt] text-black">
+            {s}
+            {i < skills.length - 1 && (
+              <span className="ml-[3mm] text-black">·</span>
+            )}
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-[2mm]">
+      {groups.map((group, gi) => (
+        <div key={gi}>
+          {group.label && (
+            <p className="text-[8.5pt] font-bold text-black">{group.label}</p>
+          )}
+          <p className="text-[8.5pt] leading-[1.5] text-black">
+            {group.items.join(", ")}
+          </p>
+        </div>
+      ))}
     </div>
   );
 }

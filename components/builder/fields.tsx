@@ -99,6 +99,15 @@ export function SkillsEditor({
     }
   }
 
+  const isGrouped = (skill: string) => {
+    const colonIndex = skill.indexOf(":");
+    return (
+      colonIndex > 0 &&
+      skill.slice(0, colonIndex).trim().length > 0 &&
+      skill.slice(colonIndex + 1).trim().length > 0
+    );
+  };
+
   return (
     <div>
       <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-stone-500">
@@ -111,7 +120,7 @@ export function SkillsEditor({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type a skill and press Enter"
+            placeholder="Type a skill or a group and press Enter"
             className="flex-1 border border-stone-300 bg-white px-3 py-2 text-sm text-ink placeholder:text-stone-400 focus:border-rust"
           />
           <button
@@ -121,27 +130,57 @@ export function SkillsEditor({
             Add
           </button>
         </div>
-        
-        {/* Skills display - compact grid */}
-        <div className="flex flex-wrap gap-1.5 border border-stone-300 bg-white p-2 max-h-48 overflow-y-auto">
+
+        {/* Hint */}
+        <p className="text-xs leading-5 text-stone-500">
+          Tip: to group related skills, type a label, then a colon, then
+          comma-separated items. Example:{" "}
+          <span className="font-mono text-stone-600">
+            Cloud: AWS, S3, IAM
+          </span>
+        </p>
+
+        {/* Skills display */}
+        <div className="space-y-1.5 border border-stone-300 bg-white p-2 max-h-64 overflow-y-auto">
           {skills.length === 0 ? (
             <span className="text-sm text-stone-400">No skills added yet</span>
           ) : (
-            skills.map((s) => (
-              <span
-                key={s}
-                className="inline-flex items-center gap-1 border border-stone-300 bg-stone-100 px-2 py-1 text-xs font-medium text-stone-700"
-              >
-                {s}
-                <button
-                  onClick={() => remove(s)}
-                  className="text-stone-400 hover:text-rust"
-                  aria-label={`Remove ${s}`}
+            skills.map((s) => {
+              const grouped = isGrouped(s);
+              return (
+                <div
+                  key={s}
+                  className={`flex items-start gap-2 px-2 py-1.5 text-xs ${
+                    grouped
+                      ? "border-l-2 border-rust bg-orange-50"
+                      : "border border-stone-300 bg-stone-100"
+                  }`}
                 >
-                  ×
-                </button>
-              </span>
-            ))
+                  <span className="min-w-0 flex-1 break-words">
+                    {grouped ? (
+                      <>
+                        <span className="font-semibold text-ink">
+                          {s.split(":")[0].trim()}
+                        </span>
+                        <span className="text-stone-500">
+                          {": "}
+                          {s.slice(s.indexOf(":") + 1).trim()}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="font-medium text-stone-700">{s}</span>
+                    )}
+                  </span>
+                  <button
+                    onClick={() => remove(s)}
+                    className="shrink-0 text-stone-400 hover:text-rust"
+                    aria-label={`Remove ${s}`}
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })
           )}
         </div>
         <p className="text-xs text-stone-400">
@@ -151,7 +190,6 @@ export function SkillsEditor({
     </div>
   );
 }
-
 /* ------------------------- experience editor ------------------------ */
 
 export function ExperienceEditor({
