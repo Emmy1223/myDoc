@@ -64,12 +64,12 @@ const FEATURES = [
     body: "Headings, lists, links, quotes, code, alignment. Everything you need, without the clutter.",
   },
   {
-    title: "Never invents",
-    body: "Every claim comes from your existing CV. Nothing is fabricated.",
-  },
-  {
     title: "Free forever",
     body: "No credit card. No document limit. No trial that expires.",
+  },
+    {
+    title: "Font control",
+    body: "Ten ATS-safe fonts and three sizes. Pick the one that fits your industry.",
   },
 ];
 

@@ -144,10 +144,37 @@ function ensureSchema(): Promise<void> {
     await sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS share_enabled BOOLEAN NOT NULL DEFAULT FALSE`;
     await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_documents_share_token ON documents(share_token) WHERE share_token IS NOT NULL`;
 
+    await sql`
+      CREATE TABLE IF NOT EXISTS feedback (
+        id TEXT PRIMARY KEY,
+        message TEXT NOT NULL,
+        name TEXT,
+        email TEXT,
+        category TEXT,
+        is_read BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `;
+
     await sql`CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents(user_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_activities_user_id ON activities(user_id)`;
-  })();
+    await sql`CREATE INDEX IF NOT EXISTS idx_feedback_created_at ON feedback(created_at DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_feedback_is_read ON feedback(is_read)`;
+        await sql`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id TEXT PRIMARY KEY,
+        rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+        message TEXT NOT NULL,
+        name TEXT,
+        role TEXT,
+        email TEXT,
+        is_approved BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `;
 
+    await sql`CREATE INDEX IF NOT EXISTS idx_reviews_approved ON reviews(is_approved, created_at DESC)`;
+  })();
   return schemaReady;
 }
 
@@ -547,7 +574,7 @@ export async function createDocument({
     documentId,
     documentTitle: cleanTitle,
   });
-
+  
   return {
     id: documentId,
     title: cleanTitle,
@@ -559,6 +586,102 @@ export async function createDocument({
     updatedAt: timestamp,
     exportCount: 0,
   };
+}
+// ============================================================
+// FEEDBACK
+// ============================================================
+
+export type FeedbackCategory = "Bug" | "Feature" | "Praise" | "Other";
+
+export type FeedbackRecord = {
+  id: string;
+  message: string;
+  name: string | null;
+  email: string | null;
+  category: string | null;
+  isRead: boolean;
+  createdAt: string;
+};
+
+export async function submitFeedback({
+  message,
+  name,
+  email,
+  category,
+}: {
+  message: string;
+  name?: string;
+  email?: string;
+  category?: string;
+}): Promise<FeedbackRecord> {
+  await ensureSchema();
+  const feedbackId = id("feedback");
+  const timestamp = now();
+
+  await sql`
+    INSERT INTO feedback (id, message, name, email, category, is_read, created_at)
+    VALUES (
+      ${feedbackId},
+      ${message.trim()},
+      ${name?.trim() || null},
+      ${email?.trim() || null},
+      ${category?.trim() || null},
+      FALSE,
+      ${timestamp}
+    )
+  `;
+
+  return {
+    id: feedbackId,
+    message: message.trim(),
+    name: name?.trim() || null,
+    email: email?.trim() || null,
+    category: category?.trim() || null,
+    isRead: false,
+    createdAt: timestamp,
+  };
+}
+
+export async function getAllFeedback(): Promise<FeedbackRecord[]> {
+  await ensureSchema();
+  const rows = (await sql`
+    SELECT * FROM feedback ORDER BY created_at DESC
+  `) as any[];
+
+  return rows.map((row) => ({
+    id: row.id,
+    message: row.message,
+    name: row.name ?? null,
+    email: row.email ?? null,
+    category: row.category ?? null,
+    isRead: Boolean(row.is_read),
+    createdAt:
+      row.created_at instanceof Date
+        ? row.created_at.toISOString()
+        : String(row.created_at),
+  }));
+}
+
+export async function markFeedbackRead(feedbackId: string, isRead: boolean) {
+  await ensureSchema();
+  await sql`
+    UPDATE feedback SET is_read = ${isRead} WHERE id = ${feedbackId}
+  `;
+  return { id: feedbackId, isRead };
+}
+
+export async function deleteFeedback(feedbackId: string) {
+  await ensureSchema();
+  await sql`DELETE FROM feedback WHERE id = ${feedbackId}`;
+  return { id: feedbackId };
+}
+
+export async function getUnreadFeedbackCount(): Promise<number> {
+  await ensureSchema();
+  const rows = (await sql`
+    SELECT COUNT(*)::int AS count FROM feedback WHERE is_read = FALSE
+  `) as any[];
+  return rows[0]?.count ?? 0;
 }
 
 export async function getDocument(userId: string, documentId: string) {
@@ -823,4 +946,129 @@ async function addActivity(values: {
       ${values.documentId ?? null}, ${values.documentTitle}, ${now()}
     )
   `;
+}
+// ============================================================
+// REVIEWS
+// ============================================================
+
+export type ReviewRecord = {
+  id: string;
+  rating: number;
+  message: string;
+  name: string | null;
+  role: string | null;
+  email: string | null;
+  isApproved: boolean;
+  createdAt: string;
+};
+
+export async function submitReview({
+  rating,
+  message,
+  name,
+  role,
+  email,
+}: {
+  rating: number;
+  message: string;
+  name?: string;
+  role?: string;
+  email?: string;
+}): Promise<ReviewRecord> {
+  await ensureSchema();
+  const reviewId = id("review");
+  const timestamp = now();
+
+  await sql`
+    INSERT INTO reviews (id, rating, message, name, role, email, is_approved, created_at)
+    VALUES (
+      ${reviewId},
+      ${rating},
+      ${message.trim()},
+      ${name?.trim() || null},
+      ${role?.trim() || null},
+      ${email?.trim() || null},
+      FALSE,
+      ${timestamp}
+    )
+  `;
+
+  return {
+    id: reviewId,
+    rating,
+    message: message.trim(),
+    name: name?.trim() || null,
+    role: role?.trim() || null,
+    email: email?.trim() || null,
+    isApproved: false,
+    createdAt: timestamp,
+  };
+}
+
+export async function getApprovedReviews(): Promise<ReviewRecord[]> {
+  await ensureSchema();
+  const rows = (await sql`
+    SELECT * FROM reviews WHERE is_approved = TRUE ORDER BY created_at DESC
+  `) as any[];
+
+  return rows.map(rowToReview);
+}
+
+export async function getAllReviews(): Promise<ReviewRecord[]> {
+  await ensureSchema();
+  const rows = (await sql`
+    SELECT * FROM reviews ORDER BY created_at DESC
+  `) as any[];
+
+  return rows.map(rowToReview);
+}
+
+export async function approveReview(reviewId: string, isApproved: boolean) {
+  await ensureSchema();
+  await sql`
+    UPDATE reviews SET is_approved = ${isApproved} WHERE id = ${reviewId}
+  `;
+  return { id: reviewId, isApproved };
+}
+
+export async function deleteReview(reviewId: string) {
+  await ensureSchema();
+  await sql`DELETE FROM reviews WHERE id = ${reviewId}`;
+  return { id: reviewId };
+}
+
+export async function getReviewStats() {
+  await ensureSchema();
+  const rows = (await sql`
+    SELECT
+      COUNT(*)::int AS total,
+      COUNT(*) FILTER (WHERE is_approved = TRUE)::int AS approved,
+      COUNT(*) FILTER (WHERE is_approved = FALSE)::int AS pending,
+      COALESCE(AVG(rating) FILTER (WHERE is_approved = TRUE), 0)::float AS avg_rating
+    FROM reviews
+  `) as any[];
+
+  const row = rows[0] ?? {};
+  return {
+    total: row.total ?? 0,
+    approved: row.approved ?? 0,
+    pending: row.pending ?? 0,
+    avgRating: row.avg_rating ?? 0,
+  };
+}
+
+function rowToReview(row: any): ReviewRecord {
+  return {
+    id: row.id,
+    rating: row.rating,
+    message: row.message,
+    name: row.name ?? null,
+    role: row.role ?? null,
+    email: row.email ?? null,
+    isApproved: Boolean(row.is_approved),
+    createdAt:
+      row.created_at instanceof Date
+        ? row.created_at.toISOString()
+        : String(row.created_at),
+  };
 }

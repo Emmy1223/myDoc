@@ -13,12 +13,10 @@ export default function LandingHero() {
             Build a CV. Write anything else.
           </h1>
           <p className="mt-6 text-lg leading-8 text-stone-600 md:text-xl md:leading-9">
-            myDoc is a CV builder and a writing editor in one workspace. Build
-            a resume from scratch, modernize an old one, tailor it to a job 
-            or open a blank page and write a project brief, report, or meeting
-            notes. Every word stays grounded in your real experience.
+            Build a resume, write a project brief, or convert a PDF. myDoc is a
+            CV builder and writing editor in one workspace, with a job tailoring
+            flow that helps you present your real experience clearly.
           </p>
-
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/login"

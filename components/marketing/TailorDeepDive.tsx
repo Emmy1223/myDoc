@@ -3,9 +3,9 @@ import { Check } from "lucide-react";
 const RULES = [
   "We rewrite your profile summary to emphasize what matters for this specific job.",
   "We reorder your skills so the relevant ones come first.",
-  "We never add a skill unless it is supported by evidence in your CV.",
+  "Every skill in the tailored CV is one you already have.",
   "We show you a match score with matched and missing keywords.",
-  "We list the gaps honestly. If the job wants Rust and you have never touched Rust, we tell you. We do not fake it.",
+  "We list the gaps honestly. If the job wants Rust and you have never touched Rust, we tell you.",
 ];
 
 export default function TailorDeepDive() {
@@ -17,13 +17,13 @@ export default function TailorDeepDive() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rust">
               Tailor to a Job
             </p>
-            <h2 className="mt-4 font-display text-3xl font-extrabold leading-[1.15] tracking-[-0.02em] text-ink md:text-4xl">
-              Tailoring that tells the truth
-            </h2>
-            <p className="mt-6 text-base leading-8 text-stone-700 md:text-lg md:leading-9">
-              Most AI tailoring tools add skills you do not have, invent
-              achievements, and inflate your title. myDoc does the opposite.
-            </p>
+        <h2 className="mt-4 font-display text-3xl font-extrabold leading-[1.15] tracking-[-0.02em] text-ink md:text-4xl">
+          Tailoring that respects your experience
+        </h2>
+          <p className="mt-6 text-base leading-8 text-stone-700 md:text-lg md:leading-9">
+            myDoc rewrites your profile summary and reorders your skills to
+            emphasize what matters for this job.
+          </p>
 
             <ul className="mt-8 space-y-4">
               {RULES.map((rule) => (

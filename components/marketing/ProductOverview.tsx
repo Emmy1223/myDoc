@@ -25,15 +25,14 @@ export default function ProductOverview() {
           One workspace for CVs and everything else
         </h2>
 
-        <p className="mt-8 text-base leading-8 text-stone-700 md:text-lg md:leading-9">
-          myDoc handles two jobs at once. It takes the CV you already have and
-          makes it work for the specific job you are applying for parsing
-          with AI, rewriting your profile and skills to match the role, and
-          exporting a clean, ATS-friendly PDF. And when you need to write
-          something else a project brief, a report, meeting notes, or just a
-          blank page - the same workspace is a full writing editor. We never
-          fabricate. We never invent. Everything you write is yours.
-        </p>
+          <p className="mt-8 text-base leading-8 text-stone-700 md:text-lg md:leading-9">
+            myDoc handles two jobs at once. It takes the CV you already have
+            and makes it work for the specific job you are applying for, with
+            AI that parses, restructures, and exports a clean, ATS-friendly
+            PDF. And when you need to write something else, the same workspace
+            is a full editor for project briefs, reports, meeting notes, and
+            invoices. Everything you write stays exactly as you wrote it.
+          </p>
 
         <div className="mt-10 grid gap-3 sm:grid-cols-2">
           {BULLETS.map((bullet) => (

@@ -19,14 +19,28 @@ export default async function AdminPage() {
 
   return (
     <main className="min-h-screen bg-[#1c1c1e] p-8 text-white">
-            <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Admin</h1>
-        <a
-          href="/admin/notifications"
-          className="bg-rust px-4 py-2 text-sm font-semibold text-white hover:bg-rust-dark"
-        >
-          Send notification →
-        </a>
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href="/admin/reviews"
+            className="border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:border-white/60"
+          >
+            Reviews →
+          </a>
+          <a
+            href="/admin/feedback"
+            className="border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:border-white/60"
+          >
+            Feedback →
+          </a>
+          <a
+            href="/admin/notifications"
+            className="bg-rust px-4 py-2 text-sm font-semibold text-white hover:bg-rust-dark"
+          >
+            Send notification →
+          </a>
+        </div>
       </div>
       <p className="mt-1 text-sm text-stone-400">
         {users.length} registered · {docs.length} documents

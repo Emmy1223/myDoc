@@ -10,10 +10,8 @@ export default function FinalCta() {
         </h2>
         <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-stone-700 md:text-lg md:leading-9">
           Upload your existing CV and tailor it in under 60 seconds. Or open a
-          blank page and start writing. Whatever you create, every word is yours
-          nothing fabricated, nothing lost.
+          blank page and start writing. Whatever you create, it is yours.
         </p>
-
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/login"

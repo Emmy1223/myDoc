@@ -15,8 +15,7 @@ export default function LandingFooter() {
               my<span className="text-rust">Doc</span>
             </Link>
             <p className="mt-3 max-w-sm text-sm leading-7 text-stone-600">
-              A CV builder and document workspace that does not lie. Write,
-              share, and export without inventing anything.
+              Build a CV. Write anything else. Share it with a link.
             </p>
           </div>
 
@@ -44,14 +43,6 @@ export default function LandingFooter() {
               <li>
                 <a
                   href="#roadmap"
-                  className="text-sm text-stone-600 transition-colors hover:text-rust"
-                >
-                  Roadmap
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#pricing"
                   className="text-sm text-stone-600 transition-colors hover:text-rust"
                 >
                   Pricing
@@ -83,10 +74,18 @@ export default function LandingFooter() {
               </li>
               <li>
                 <Link
-                  href="/privacy"
+                  href="/reviews"
                   className="text-sm text-stone-600 transition-colors hover:text-rust"
                 >
-                  Privacy
+                  Reviews
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/feedback"
+                  className="text-sm text-stone-600 transition-colors hover:text-rust"
+                >
+                  Feedback
                 </Link>
               </li>
               <li>

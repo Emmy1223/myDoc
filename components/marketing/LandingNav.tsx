@@ -7,7 +7,7 @@ import { LogOut, Menu, X } from "lucide-react";
 const NAV_LINKS = [
   { href: "#features", label: "Features" },
   { href: "#how-it-works", label: "How it works" },
-  { href: "#roadmap", label: "Roadmap" },
+  { href: "/reviews", label: "Reviews" },
   { href: "#pricing", label: "Pricing" },
   { href: "#faq", label: "FAQ" },
 ];

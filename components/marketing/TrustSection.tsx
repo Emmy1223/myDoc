@@ -13,19 +13,17 @@ export default function TrustSection() {
           Trust and ethics
         </p>
         <h2 className="mt-4 font-display text-3xl font-extrabold leading-[1.15] tracking-[-0.02em] text-ink md:text-4xl">
-          Our single rule: never lie on your behalf
+          You write it. We help you present it.
         </h2>
 
-        <p className="mt-8 text-base leading-8 text-stone-700 md:text-lg md:leading-9">
-          Every other AI resume tool on the market will happily add skills you
-          do not have. They rewrite your experience to sound more impressive
-          than it was. They make you look like a better candidate than you are.
+        <p className="mt-6 text-base leading-8 text-stone-700 md:text-lg md:leading-9">
+          myDoc uses AI to reorganize, reword, and reorder what you have already
+          written. It does not add skills, experience, or achievements that are
+          not in your CV.
         </p>
-
-        <p className="mt-6 font-display text-xl font-bold tracking-tightish text-ink md:text-2xl">
-          We do not do that.
+        <p className="mt-4 text-base leading-8 text-stone-700 md:text-lg md:leading-9">
+          Everything you submit is something you actually did.
         </p>
-
         <ul className="mt-10 space-y-4">
           {RULES.map((rule) => (
             <li key={rule} className="flex gap-3">

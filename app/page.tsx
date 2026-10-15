@@ -8,7 +8,7 @@ import TailorDeepDive from "@/components/marketing/TailorDeepDive";
 import ParseDeepDive from "@/components/marketing/ParseDeepDive";
 import EditorDeepDive from "@/components/marketing/EditorDeepDive";
 import FeatureGrid from "@/components/marketing/FeatureGrid";
-import ComingSoon from "@/components/marketing/ComingSoon";
+import ReviewsSection from "@/components/marketing/ReviewsSection";
 import TrustSection from "@/components/marketing/TrustSection";
 import PricingSection from "@/components/marketing/PricingSection";
 import FaqSection from "@/components/marketing/FaqSection";
@@ -31,7 +31,7 @@ export default async function HomePage() {
         <ParseDeepDive />
         <EditorDeepDive />
         <FeatureGrid />
-        <ComingSoon />
+        <ReviewsSection />
         <TrustSection />
         <PricingSection />
         <FaqSection />

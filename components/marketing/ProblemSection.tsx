@@ -16,21 +16,20 @@ export default function ProblemSection() {
             </strong>{" "}
             Sending the same CV to fifty jobs does not work anymore. Applicant
             Tracking Systems filter out generic CVs before a human ever sees
-            them. Tailoring each CV by hand takes an hour you do not have. And
-            most AI resume builders solve this by inventing experience you do
-            not have they add skills, inflate titles, and rewrite
-            achievements. You get caught in the interview. You get blacklisted
-            from the company. You lose the opportunity.
+            them. Tailoring each CV by hand takes an hour you do not have. So
+            either the CV goes out generic and gets filtered, or you spend the
+            afternoon rewriting it and hope you did not miss anything.
           </p>
           <p>
             <strong className="font-semibold text-ink">
               For everything else.
             </strong>{" "}
-            The other half of your job search - cover letters, project briefs,
-            reports, meeting notes lives in a different app. Usually Word,
+            The other half of your job search, cover letters, project briefs,
+            reports, meeting notes, lives in a different app. Usually Word,
             Google Docs, or a notes tool that was never designed for
-            professional documents. You copy and paste between windows, reformat
-            everything by hand, and lose track of what you wrote where.
+            professional documents. You copy and paste between windows,
+            reformat everything by hand, and lose track of what you wrote
+            where.
           </p>
           <p className="font-display text-xl font-bold tracking-tightish text-ink md:text-2xl">
             There is a better way.
