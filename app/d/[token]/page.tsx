@@ -12,9 +12,51 @@ import PublicDocView from "@/components/share/PublicDocView";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Shared document",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ token: string }>;
+}): Promise<Metadata> {
+  const { token } = await params;
+  const doc = await getSharedDocument(token);
+  if (!doc) {
+    return { title: "Document not found" };
+  }
+
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://mydoc-six.vercel.app";
+
+  const description =
+    doc.kind === "CV"
+      ? `A CV shared from myDoc. View it instantly, no download required.`
+      : `A document shared from myDoc. View it instantly, no download required.`;
+
+  return {
+    title: `${doc.title} — myDoc`,
+    description,
+    openGraph: {
+      title: `${doc.title} — myDoc`,
+      description,
+      url: `${appUrl}/d/${token}`,
+      siteName: "myDoc",
+      images: [
+        {
+          url: `${appUrl}/opengraph-image.png`,
+          width: 1200,
+          height: 630,
+          alt: `${doc.title} on myDoc`,
+        },
+      ],
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${doc.title} — myDoc`,
+      description,
+      images: [`${appUrl}/opengraph-image.png`],
+    },
+  };
+}
 
 export default async function SharedPage({
   params,
