@@ -9,7 +9,35 @@ export type RichDocNode = {
 export type RichDocContent = {
   doc: RichDocNode;
   schemaVersion: 1;
+  fontFamily?: string;
 };
+
+export const DOC_FONTS: {
+  id: string;
+  name: string;
+  css: string;
+}[] = [
+  { id: "geist",     name: "Geist",            css: "'Geist', system-ui, sans-serif" },
+  { id: "arial",     name: "Arial",            css: "Arial, Helvetica, sans-serif" },
+  { id: "helvetica", name: "Helvetica",        css: "Helvetica, Arial, sans-serif" },
+  { id: "calibri",   name: "Calibri",          css: "Calibri, Carlito, Arial, sans-serif" },
+  { id: "verdana",   name: "Verdana",          css: "Verdana, Geneva, sans-serif" },
+  { id: "trebuchet", name: "Trebuchet MS",     css: "'Trebuchet MS', Tahoma, sans-serif" },
+  { id: "georgia",   name: "Georgia",          css: "Georgia, 'Times New Roman', serif" },
+  { id: "times",     name: "Times New Roman",  css: "'Times New Roman', Times, serif" },
+  { id: "garamond",  name: "Garamond",         css: "Garamond, Georgia, serif" },
+  { id: "cambria",   name: "Cambria",          css: "Cambria, Georgia, serif" },
+  { id: "courier",   name: "Courier New",      css: "'Courier New', Courier, monospace" },
+];
+
+export const DEFAULT_DOC_FONT = "geist";
+
+export function getDocFontCss(id: string | undefined): string {
+  return (
+    DOC_FONTS.find((f) => f.id === id)?.css ??
+    DOC_FONTS.find((f) => f.id === DEFAULT_DOC_FONT)!.css
+  );
+}
 
 export function emptyDocBody(): RichDocNode {
   return {

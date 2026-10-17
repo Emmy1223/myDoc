@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import SignOutButton from "@/components/auth/SignOutButton";
 import HowItWorksModal from "@/components/tailor/HowItWorksModal";
+import WhatsNewButton from "./WhatsNewButton";
 
 type SidebarLinkProps = {
   href: string;
@@ -183,8 +184,17 @@ function SidebarContent({
         />
       </nav>
 
+      {/* What's new button sits at the bottom of the nav, above the user profile */}
       <div
-        className={`mt-auto border-t p-4 ${
+        className={`mt-auto border-t px-3 py-2 ${
+          isLight ? "border-stone-200" : "border-stone-800"
+        }`}
+      >
+        <WhatsNewButton />
+      </div>
+
+      <div
+        className={`border-t p-4 ${
           isLight ? "border-stone-200" : "border-stone-800"
         }`}
       >

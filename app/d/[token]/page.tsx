@@ -141,8 +141,10 @@ function DocView({
   title: string;
 }) {
   let body: RichDocNode | null = null;
+  let fontFamily: string | undefined;
   if (isRichDocContent(content)) {
     body = content.doc;
+    fontFamily = content.fontFamily;
   }
 
   return (
@@ -153,7 +155,7 @@ function DocView({
             {title}
           </h1>
           {body ? (
-            <PublicDocView body={body} />
+            <PublicDocView body={body} fontFamily={fontFamily} />
           ) : (
             <p className="text-sm italic text-stone-500">
               This document has no readable content.

@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Cloud, CloudOff, FileDown, Save } from "lucide-react";
+import DocFontPicker from "./DocFontPicker";
 import Link from "next/link";
 import DocEditor from "./DocEditor";
 import DocToolbar from "./DocToolbar";
 import DocListRail, { type DocListItem } from "./DocListRail";
 import {
+  DEFAULT_DOC_FONT,
   emptyDocContent,
   isRichDocContent,
   type RichDocNode,
@@ -37,6 +39,7 @@ export default function DocBuilderClient({
   const [title, setTitle] = useState<string>(
     initialDocuments.find((d) => d.id === startId)?.title ?? "Untitled document",
   );
+  const [fontFamily, setFontFamily] = useState<string>(DEFAULT_DOC_FONT);
   const [body, setBody] = useState<RichDocNode>(emptyDocContent().doc);
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(true);
@@ -61,7 +64,6 @@ export default function DocBuilderClient({
         const doc = data.document as (FullDoc & { content?: unknown }) | undefined;
 
         if (!doc) {
-          // Document missing (deleted, wrong user, stale URL). Fall back.
           setTitle("Untitled document");
           setBody(emptyDocContent().doc);
           setSaved(true);
@@ -71,8 +73,10 @@ export default function DocBuilderClient({
         setTitle(doc.title);
         if (isRichDocContent(doc.content)) {
           setBody(doc.content.doc);
+          setFontFamily(doc.content.fontFamily ?? DEFAULT_DOC_FONT);
         } else {
           setBody(emptyDocContent().doc);
+          setFontFamily(DEFAULT_DOC_FONT);
         }
         setSaved(true);
       } finally {
@@ -86,7 +90,7 @@ export default function DocBuilderClient({
 
   /* ---------------- Debounced autosave ---------------- */
   const scheduleSave = useCallback(
-    (nextTitle: string, nextBody: RichDocNode) => {
+    (nextTitle: string, nextBody: RichDocNode, nextFont?: string) => {
       if (!activeId) return;
       setSaved(false);
       if (saveTimer.current) window.clearTimeout(saveTimer.current);
@@ -97,7 +101,11 @@ export default function DocBuilderClient({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               title: nextTitle,
-              content: { schemaVersion: 1, doc: nextBody },
+              content: {
+                schemaVersion: 1,
+                doc: nextBody,
+                fontFamily: nextFont ?? fontFamily,
+              },
             }),
           });
           setSaved(true);
@@ -117,7 +125,7 @@ export default function DocBuilderClient({
         }
       }, 800);
     },
-    [activeId],
+    [activeId, fontFamily],
   );
 
   /* ---------------- Manual save (flush immediately) ---------------- */
@@ -134,7 +142,7 @@ export default function DocBuilderClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
-          content: { schemaVersion: 1, doc: body },
+          content: { schemaVersion: 1, doc: body, fontFamily },
         }),
       });
       setSaved(true);
@@ -148,7 +156,7 @@ export default function DocBuilderClient({
     } catch {
       setSaved(false);
     }
-  }, [activeId, title, body]);
+  }, [activeId, title, body, fontFamily]);
 
   const handleBodyChange = useCallback(
     (next: RichDocNode) => {
@@ -157,6 +165,15 @@ export default function DocBuilderClient({
       scheduleSave(title, next);
     },
     [scheduleSave, title, loading],
+  );
+
+  const handleFontChange = useCallback(
+    (next: string) => {
+      setFontFamily(next);
+      if (loading) return;
+      scheduleSave(title, body, next);
+    },
+    [scheduleSave, title, body, loading],
   );
 
   const handleTitleChange = useCallback(
@@ -177,7 +194,11 @@ export default function DocBuilderClient({
           title: name,
           kind: "Document",
           templateId,
-          content: { schemaVersion: 1, doc: initialBody },
+          content: {
+            schemaVersion: 1,
+            doc: initialBody,
+            fontFamily: DEFAULT_DOC_FONT,
+          },
         }),
       });
       if (!res.ok) return;
@@ -210,8 +231,6 @@ export default function DocBuilderClient({
 
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden md:h-screen md:flex-row">
-      {/* Left rail — on mobile it renders just the hamburger button;
-          on desktop it renders the full sidebar */}
       <DocListRail
         documents={documents}
         activeId={activeId}
@@ -219,11 +238,8 @@ export default function DocBuilderClient({
         onCreate={handleCreate}
       />
 
-      {/* Main area */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Top bar */}
         <div className="flex flex-col gap-2 border-b border-stone-200 bg-white px-3 py-2 print-hidden md:flex-row md:items-center md:justify-between md:gap-0 md:px-5 md:py-3">
-          {/* Row 1: back link + title */}
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <Link
               href="/dashboard"
@@ -242,7 +258,6 @@ export default function DocBuilderClient({
             />
           </div>
 
-          {/* Row 2 (mobile) / same row (desktop): status + actions */}
           <div className="flex items-center justify-between gap-2 md:ml-4 md:justify-end md:gap-3">
             <span
               className={`inline-flex items-center gap-1.5 text-xs font-medium ${
@@ -262,6 +277,11 @@ export default function DocBuilderClient({
               )}
             </span>
             <div className="flex items-center gap-2">
+              <DocFontPicker
+                value={fontFamily}
+                onChange={handleFontChange}
+                disabled={loading || !activeId}
+              />
               <button
                 onClick={saveNow}
                 disabled={saved || !activeId}
@@ -284,10 +304,8 @@ export default function DocBuilderClient({
           </div>
         </div>
 
-        {/* Toolbar */}
         <DocToolbar disabled={loading || !activeId} />
 
-        {/* Canvas */}
         <div className="flex-1 overflow-auto bg-stone-200">
           <div className="doc-print-area mx-auto my-3 w-full max-w-[210mm] bg-white shadow-sm md:my-8 md:min-h-[297mm] md:w-[210mm]">
             <DocEditor
@@ -295,6 +313,7 @@ export default function DocBuilderClient({
               body={body}
               onChange={handleBodyChange}
               editable={!!activeId && !loading}
+              fontFamily={fontFamily}
             />
           </div>
         </div>

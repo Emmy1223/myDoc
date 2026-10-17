@@ -174,6 +174,27 @@ function ensureSchema(): Promise<void> {
     `;
 
     await sql`CREATE INDEX IF NOT EXISTS idx_reviews_approved ON reviews(is_approved, created_at DESC)`;
+        await sql`
+      CREATE TABLE IF NOT EXISTS announcements (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        body TEXT NOT NULL,
+        url TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS announcement_clears (
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        announcement_id TEXT NOT NULL REFERENCES announcements(id) ON DELETE CASCADE,
+        cleared_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (user_id, announcement_id)
+      )
+    `;
+
+    await sql`CREATE INDEX IF NOT EXISTS idx_announcements_created_at ON announcements(created_at DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_announcement_clears_user ON announcement_clears(user_id)`;
   })();
   return schemaReady;
 }
@@ -750,6 +771,128 @@ export async function updateDocument(
     status: newStatus,
     updatedAt: timestamp,
   };
+}
+
+// ============================================================
+// ANNOUNCEMENTS (What's New)
+// ============================================================
+
+export type AnnouncementRecord = {
+  id: string;
+  title: string;
+  body: string;
+  url: string | null;
+  createdAt: string;
+};
+
+function rowToAnnouncement(row: any): AnnouncementRecord {
+  return {
+    id: row.id,
+    title: row.title,
+    body: row.body,
+    url: row.url ?? null,
+    createdAt:
+      row.created_at instanceof Date
+        ? row.created_at.toISOString()
+        : String(row.created_at),
+  };
+}
+
+export async function createAnnouncement({
+  title,
+  body,
+  url,
+}: {
+  title: string;
+  body: string;
+  url?: string | null;
+}): Promise<AnnouncementRecord> {
+  await ensureSchema();
+  const announcementId = id("announcement");
+  const timestamp = now();
+
+  await sql`
+    INSERT INTO announcements (id, title, body, url, created_at)
+    VALUES (
+      ${announcementId},
+      ${title.trim()},
+      ${body.trim()},
+      ${url?.trim() || null},
+      ${timestamp}
+    )
+  `;
+
+  return {
+    id: announcementId,
+    title: title.trim(),
+    body: body.trim(),
+    url: url?.trim() || null,
+    createdAt: timestamp,
+  };
+}
+
+export async function getAnnouncementsForUser(
+  userId: string,
+): Promise<AnnouncementRecord[]> {
+  await ensureSchema();
+  const rows = (await sql`
+    SELECT a.*
+    FROM announcements a
+    WHERE NOT EXISTS (
+      SELECT 1 FROM announcement_clears c
+      WHERE c.announcement_id = a.id AND c.user_id = ${userId}
+    )
+    ORDER BY a.created_at DESC
+  `) as any[];
+
+  return rows.map(rowToAnnouncement);
+}
+
+export async function getAllAnnouncements(): Promise<AnnouncementRecord[]> {
+  await ensureSchema();
+  const rows = (await sql`
+    SELECT * FROM announcements ORDER BY created_at DESC
+  `) as any[];
+  return rows.map(rowToAnnouncement);
+}
+
+export async function getAnnouncementUnreadCount(userId: string): Promise<number> {
+  await ensureSchema();
+  const rows = (await sql`
+    SELECT COUNT(*)::int AS count
+    FROM announcements a
+    WHERE NOT EXISTS (
+      SELECT 1 FROM announcement_clears c
+      WHERE c.announcement_id = a.id AND c.user_id = ${userId}
+    )
+  `) as any[];
+  return rows[0]?.count ?? 0;
+}
+
+export async function clearAnnouncement(userId: string, announcementId: string) {
+  await ensureSchema();
+  await sql`
+    INSERT INTO announcement_clears (user_id, announcement_id)
+    VALUES (${userId}, ${announcementId})
+    ON CONFLICT DO NOTHING
+  `;
+  return { id: announcementId };
+}
+
+export async function clearAllAnnouncements(userId: string) {
+  await ensureSchema();
+  await sql`
+    INSERT INTO announcement_clears (user_id, announcement_id)
+    SELECT ${userId}, id FROM announcements
+    ON CONFLICT DO NOTHING
+  `;
+  return { ok: true };
+}
+
+export async function deleteAnnouncement(announcementId: string) {
+  await ensureSchema();
+  await sql`DELETE FROM announcements WHERE id = ${announcementId}`;
+  return { id: announcementId };
 }
 
 export async function duplicateDocument(userId: string, documentId: string) {
