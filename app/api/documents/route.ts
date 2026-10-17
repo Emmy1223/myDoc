@@ -6,6 +6,7 @@ import {
   type DocumentStatus,
 } from "@/lib/server-db";
 import { getSessionUserId } from "@/lib/session";
+export const dynamic = "force-dynamic";
 
 export const runtime = "nodejs";
 

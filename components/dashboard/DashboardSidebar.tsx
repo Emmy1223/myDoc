@@ -10,6 +10,7 @@ import {
   FileOutput,
   Sparkles,
   HelpCircle,
+  Target,
   Menu,
   X,
 } from "lucide-react";
@@ -131,6 +132,7 @@ function SidebarContent({
               variant={variant}
             />
           </div>
+
           <button
             type="button"
             onClick={onShowHowItWorks}
@@ -145,7 +147,15 @@ function SidebarContent({
             <HelpCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
           </button>
         </div>
-
+        
+        <SidebarLink
+          href="/dashboard/grade"
+          icon={Target}
+          label="Grade your CV"
+          active={pathname.startsWith("/dashboard/grade")}
+          onClick={onNavigate}
+          variant={variant}
+        />
         <SidebarLink
           href="/dashboard/write"
           icon={PenLine}
